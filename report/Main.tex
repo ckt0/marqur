@@ -1,0 +1,40 @@
+\documentclass[a4paper,12pt]{report}
+\usepackage{graphicx}
+\usepackage{sectsty}
+\chapterfont{\Large\centering\MakeUppercase}
+\usepackage{amsmath}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{array}  % for setting column width in tables
+\usepackage{Times} %or  \usepackage{mathptmx}  for Times New Roman
+\usepackage[top=3cm,bottom=2.5cm,left= 3cm,right=2.5cm]{geometry}
+% comment the next few lines till \renewcommand{..}if header and footer not required except for \rfoot{..} line
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\rhead{\textit{2019}}
+\lfoot{\textit{Department of Computer Science and Engineering,AJCE}}
+\cfoot{}
+\rfoot{\textit{\thepage}}
+\lhead{\nouppercase{\textit{\leftmark\ }}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\begin{document}
+\input{title.tex}	
+\doublespacing	
+\pagenumbering{roman}
+\input{certf.tex}
+\input{ackn.tex}
+\input{abstract.tex}
+%\pagenumbering{roman}
+\tableofcontents
+\listoffigures  
+%\input{abbrevations.tex}  % add Abbrevation ,Nomenclature chapters if needed
+\clearpage
+\pagenumbering{arabic}
+%\pagestyle{fancy}
+\input{intro.tex}
+% add other chapters here using above command eg: \input{./results.tex}
+\input{bibilo.tex}
+%\input{Appendix.tex}
+%\input{./Publications.tex} % Add a chapter for list of Publication
+\end{document}

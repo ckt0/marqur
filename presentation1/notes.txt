@@ -1,0 +1,35 @@
+Wednesday there will be project evaluation in seminar hours. The schedule will be published tomorrow. Each project team has to give a presentation consisting of introduction, existing works, motivation, objectives and work plan.  So, be ready with the presentation. If the presentation is not done during the normal schedule, you have to conduct it after November 25 during your study leave by consulting with HOD for his free slots.
+
+Introduction 
+	Conceptual Explanation
+	Facebook Similarity
+	Operation Basics
+	
+Existing Works
+	Google Maps 
+
+Motivation 
+	1) Good source for local news updates
+	2) Better alternative to ads and classifieds
+	3) Good source for learning location's history and culture
+
+Objectives 
+	
+	Primary:
+	1) Let users post content at a specific location
+	2) Let users see content posted at a particular location
+	
+	Secondary:
+	1) Let users vote/comment/report posts 
+	2) Let users view a location's posts sorted according to votes or time
+	3) Let users post content on different 'channels' allowing for better discovery
+	4) Let users make and view user profiles 
+	5) Let users view posts around their current location using AR
+
+Work Plan
+
+	Weeks 1-3: Basic app that posts and fetches content stored at specific coordinates
+	Weeks 4-6: Standard UI with Map view and content navigation
+	Weeks 5-9: Social features and AR
+	Weeks 9-12: Finalization and Deployment
+	

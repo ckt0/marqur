@@ -1,0 +1,131 @@
+\clearpage
+\pagenumbering{roman}
+\clearpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+\setcounter{secnumdepth}{3}
+\pagestyle{fancy}
+\lhead{\textit{Fingerprint Spoofing Detection using Wave Atom Transformation for Image Enhancement}}
+\lfoot{\textit{Department of Computer Science and Engineering,AJCE}}
+%\lfoot{\emph{Dept of Computer Science \& Engineering, AJCE}}
+\cfoot{}
+\rfoot{\textit{\thepage}}
+\rhead{ 2019}
+%\rhead{\nouppercase{\emph{\leftmark}}}
+\renewcommand{\footrulewidth}{0.4pt}
+\chapter{Introduction}
+\section{Overview}
+Biometric security is a mechanism which is used to authenticate and provide access to a system based on  an individual's automatic and instant verification of physical characteristics[]. It is considered as the strongest and the most commonly using foolproof physical security technique for identity verification since it evaluates an individual's bodily elements or biological data.
+In the area of biometric identification, security as well as convenience
+of the system are important. Also high accuracy and fast response times are required by the systems. Biometric methods include those based on the pattern of fingerprints, the hand
+geometry, or the veins on the back of the hand, the iris, the voice,  facial features etc. Among these, fingerprint recognition is considered to be well known due to its characteristics like, uniqueness, stability, robustness, universality, acceptability. It maintains its own individuality and has wide day-to-day-applications such as financial transactions, international border security, unlocking a smart-phone, etc. But with this ubiquitous deployment, security of the recognition system itself can be jeopardized by spoof attacks or presentation attacks. Presentation attacks is the ``presentation to the biometric data capture subsystem with the aim of intruding the operation of the biometric system".
+\paragraph{}These attacks can be realized through a number of methods including, but not limited to, use of (i) gummy fingers, i.e. fabricated finger-like objects with accurate imitation of another individual's fingerprint ridge-valley structures, (ii) 2D or 3D printed fingerprint targets[],(iii) altered fingerprints, i.e. damaged or intentionally tampered real fingerprint patterns to avoid identification, and (iv) cadaver fingers. Commonly available materials, such as play-doh, gelatin, silicone etc., as shown in \cite{fig1}, are used to develop fingerprint spoofs. 
+%to include figure
+\begin{figure}[h]
+\center
+\includegraphics[]{}   
+\caption{}
+\label{fig1}
+\end{figure}
+%next section
+\section{Motivation} To detect these  fingerprint spoofing attacks, spoof detection methods are urgently needed on fingerprint authentication systems; so that it increase the user confidentiality and security on such systems. The anti-spoofing methods proposed in literature can be broadly classified as hardware-based and software-based solutions. Visual comparison between live and spoof from LivDet 2011 is shown in fig 1.2. But the major limitation of many of the existing anti-spoofing techniques is the poor generalization performance of the spoofing materials used. Thus an enhanced fingerprint image dataset is required to perform the spoofing detection.
+
+\section{Objective}
+The main objective is to classify the images as live and spoof fingerprints.
+The hardware based solutions typically require the fingerprint reader along with sensor to detect the characteristics of vitality, such as skin distortion, odour, blood ﬂow, etc. For example, the fingerprint sensors, such as Lumidigm’s multi spectral scanner and Compact Imaging’s multiple reference optical coherence tomography (OCT), capture sub-dermal ridge patterns in the finger. On the other hand, software-based solutions, extract features from the fingerprint image presented on the fingerprint sensors. It does not require any additional hardware cost to differentiate the image live or spoof. It is again classified into two: Dynamic and Static which is shown in Figure 1.3.
+
+\chapter{Literature Survey}
+\section{Fingerprint Spoof Buster: Use of Minutiae-centered Patches}
+\textbf{Authors: Tarang Chugh, Kai Cao, and Anil K. Jain}
+\subsection{Introduction}
+The Fingerprint Recognition System has ubiquitous deployment in many day-to-day applications, such as financial transactions, international border security, unlocking a smart phone, etc. The primary purpose of a fingerprint recognition system is to ensure a reliable and accurate user authentication system. But the protection of the popularity system itself is often imperilled by spoof attacks. This study addresses the problem of developing an efficient, generalizable and accurate algorithm for detecting the various spoof attacks on a fingerprint. The ISO customary defines presentation attacks because the presentation to the biometric information capture scheme with the goal of intrusive with the operation of the biometric system[].These attacks can be realized through a number of methods including, but not limited to, use of gummy fingers, i.e. fabricated finger-like objects with accurate imitation of another individual's fingerprint ridge-valley structures, (ii) 2D or 3D printed fingerprint targets, (iii) altered fingerprint, i.e. intentionally  damaged or tampered real fingerprint patterns to avoid identification, and (iv) cadaver fingers. Commonly available materials utilized to generate fingerprint spoofs include silicone, gelatin,  play-doh, etc. These are capable of outwitting a fingerprint recognition system security with a reported success rate of more than 70\%. There are various anti-spoofing methods available. The main limitation of most of the published anti-spoofing techniques is their poor generalization performance across the spoofing materials. This paper proposes a deep convolutional neural network based approach utilizing local patches centred and aligned using fingerprint minutiae. It provides more robust novel fabrication materials than earlier approaches.  
+\subsection{Proposed System}
+The proposed approach includes two stages, an off-line training stage and an on-line testing stage. An overview of the proposed approach is presented in Figure 2.1. The off-line training stage involves:
+\begin{enumerate}
+\item Detecting minutiae in the sensed fingerprint image (live or spoof). 
+\item Extracting local patches centred and aligned using minutiae location and orientation, respectively.
+\item Training MobileNet models on the aligned local patches. 
+\item During the testing stage, the spoof detection decision is made based on the average of spoofness scores for individual patches output from the MobileNet model. 
+\end{enumerate}
+
+\subsection{Experiments and Results}
+\textbf{Evaluation Metrics:}
+ The performance of the proposed approach is evaluated following the metrics:
+    \begin{enumerate}
+	\item Ferrlive: Percentage of misclassified live fingerprints. 
+	\item Ferrfake: Percentage of misclassified spoof fingerprints.
+     \end{enumerate}  The average classification error (ACE) is defined as:
+        \begin{eqnarray}
+          ACE =  (Ferrlive + Ferrfake) \div 2 
+        \end{eqnarray} 
+ \\
+\textbf{Results:} 
+The proposed approach is evaluated under four scenarios of fingerprint spoof detection, that reflect an algorithm's robustness against different sensors, spoof materials and environments. 
+\begin{enumerate}
+\item \textit{Intra-Sensor, Known Spoof Materials:} 
+ Here all the training and testing images are captured from same sensor, and all spoof fabrication materials utilized for testing are known a priori. The experimental results shows that training the minutiae-based local patches using MobileNet-v1 model provides better peformance than fine-tuning a pre-trained network.
+
+ \paragraph{}
+ The impact of local patch size on the performance of the proposed approach is evaluated by comparing the performance of three CNN models trained on minutiae-centred local patches of size $ [p\ast p]$ where $ p = \lbrace{64,96,128\rbrace}$ , extracted from the fingerprint images captured by Biometrika sensor for LivDet 2011 dataset. Among these three models, the one trained on local patches of size $ [96 \ast 96]$ performed the best. Using average-rule, score-level fusion of the three models lowered the average classification error (ACE) from 1.24\% to 0.88\%, and Ferrfake from 1.41\% to 0.58\% @ Ferrlive = 1\%.For other sensors also similar performance gains were observed  but there is a trade off between the performance gain and the computational requirements for spoof detector. In order to evaluate the significance of utilizing minutiae locations for extracting local patches, independent MobileNetv1 models on a similar number of local patches are trained, and extracted
+randomly from LivDet 2015 datasets. It was observed that the models trained on minutiae-centred local patches achieved a significantly higher reduction (78\%) in average classification error, compared to the reduction (33\%) achieved by the models trained on randomly sampled local patches. 
+
+
+\item \textit{Intra-Sensor, Cross-Material:}
+Here, the same sensor is used to capture all the training as well as testing images, but spoof images in testing set are fabricated using new materials that were not seen during training. For the first set of cross-material experiments, the LivDet 2015 dataset which contains two new spoof materials in the testing set for each sensor is utilized, i.e. Liquid Ecoﬂex and RTV for Green Bit, Biometrika, and Digital Persona sensors, and OOMOO and Gelatin for CrossMatch sensor. A significant reduction in the error rate is achieved by the proposed method. 
+
+\item \textit{Cross-Sensor Evaluation:}
+ In this evaluation, training and testing images are captured from the same dataset but from two different sensors. This setting reflects the algorithm's strength in learning the common characteristics used to distinguish live and spoof fingerprints across fingerprint
+acquisition devices. For instance, using LivDet 2011 dataset, images from Biometrika sensor are used for training, and the images from ItalData sensor are used for testing. 
+\item \textit{Cross-Dataset Evaluation:}
+ In this case, same sensor is used to obtain the training and testing images, but from two different datasets. For instance, training images are acquired using Biometrika sensor from LivDet 2011 dataset and the testing images are acquired using Biometrika sensor from LivDet 2013. This set of experiments captures the algorithm's invariance to the changes in environment for data collection.
+\end{enumerate} 
+\subsection{Conclusion}
+A robust and accurate method for fingerprint spoof detection is critical to ensure the reliability and security of the fingerprint authentication systems. In this study, fingerprint domain knowledge are utilized by extracting local patches centred and aligned using minutiae in the input fingerprint image for training MobileNet-v1 CNN models. The local patch based approach provides salient cues to differentiate spoof fingerprints from live fingerprints. The proposed approach gained a significant reduction in error rates for intra-sensor (63\%), cross-sensor (4\%), cross-material (43\%),
+and cross-dataset scenarios (29\%) when compared to state-of-the-art on public domain LivDet datasets.
+In future, this interface will be augmented to display the output from multiple CNN models for an easy visual comparison.
+
+\subsection{Advantages and Disadvantages}
+\section{Fingerprint Recognition Using Minutiae Extractor}
+\textbf{Authors: Manisha Redhu and Dr.Balkishan}
+ \subsection{Introduction}
+ The popular Biometric  used to authenticate  a person  is  fingerprint which is unique and permanent throughout the person life. Fingerprint authentication or recognition refers to the automated method of verifying a match between two human fingerprint[]. Fingerprints are widely used in day today life since 100 years due to its distinctiveness, feasibility, accuracy, permanence,  acceptability and reliability. Various approaches and algorithms are available for fingerprint matching procedure. For example of these matching are correlation matching, Minutiae Based matching and pattern based matching. This paper  projected on Fingerprint Recognition using Minutia Score Matching method. 
+\paragraph{}
+The distinctive feature for the finger recognition is Minutiae. Minutiae points are local ridge characteristics that occur at either a ridge ending or a ridge bifurcation. Minutiae patterns are very 
+The WLD is built starting from two dense fields of features, differential excitation and orientation. The differential excitation writes as: 
+\begin{equation}
+\xi(x)=arctan [\Sigma _{i=0}^{7} \frac{xi-x}{x}]  
+\end{equation}
+The numerator in the square bracket is proportional to the difference between the intensity of the target pixel and the average intensity of its neighbours (consider here a radius 1 neighbourhood,using a larger radius allows multi scale analysis). Live and fake fingerprints with the corresponding differential excitation and gradient orientation fields is given in Figure 2.20. Therefore, the feature is zero in flat areas of the image and grows larger in the presence of discontinuities. However, the very same difference can have a quite different perceptual importance depending on where it occurs in the image: it can be barely distinguishable in a high intensity region, and quite significant instead in low-to-medium intensity regions. This observation is captured by the well-known Weber’s law that states that the just-noticeable difference between two stimuli is proportional to the magnitude of the stimuli. In accordance with this principle, this difference is normalized to the pixel intensity itself. Finally, the arc-tan non-linearity serves to limit the feature in the finite range $[-\pi /2,\pi/2]$. The orientation is nothing more than the gradient orientation, namely the angle formed with the reference axis by the vector whose components are the horizontal and vertical central differences of the image at location x 
+
+\chapter{Implementation Details}
+\section{Requirement Analysis}
+\subsection{Hardware Specifications}
+\begin{itemize}
+\item Memory: 1 TB
+\item Hard-disk:4 GB
+\item Processor:INTEL CORE i3
+\end{itemize}
+
+\subsection{Software Specifications}
+MATLAB (matrix laboratory) is a multi-paradigm numerical computing environment and fourth-generation programming language. A proprietary programming language developed by MathWorks, MATLAB allows matrix manipulations, plotting of functions and data, implementation of algorithms, creation of user interfaces, and interfacing with programs written in other languages, including C, C++, Java, Fortran and Python.
+
+\paragraph{} Although MATLAB is intended primarily for numerical computing, an optional toolbox uses the MuPAD symbolic engine, allowing access to symbolic computing abilities. An additional package, Simulink, adds graphical multi-domain simulation and model-based design for dynamic and embedded systems.In 2004, MATLAB had around one million users across industry and academia. MATLAB users come from various backgrounds of engineering, science, and economics.
+
+\section{Datasets}
+\textbf{LivDet Datasets} In order to evaluate performance of the proposed approach, here utilized LivDet 2011, LivDet 2013, and LivDet 2015 datasets. Each of these datasets contains over 16,000 fingerprint images, acquired from four different fingerprint readers, with equal numbers of live and spoof fingerprints that are equally split between training and testing sets. However, the CrossMatch and Swipe readers from LivDet 2013 dataset were not utilized for evaluation purposes because the (a) LivDet competition organizers found anomalies in the fingerprint data from CrossMatch reader and discouraged its use for comparative evaluations, and (b) the resolution of fingerprint images output from Swipe reader is very low, i.e. 96 dpi. Unlike other LivDet datasets, spoof fingerprint images from Biometrika and Italdata readers in LivDet 2013 dataset are fabricated using the non-cooperative method i.e. without user cooperation. It should be noted that in LivDet 2015, the testing set included spoofs fabricated using new materials, that were not known in the training set. These new materials included liquid ecoﬂex and RTV for Biometrika, Digital Persona, and Green Bit readers, and OOMOO and gelatin for Cross-match reader. 
+\section{Module Description}
+\subsection{Dataset Collection} 
+In order to evaluate performance of the proposed approach, LivDet 2015 datasets are utilized by them. Each of these datasets contains over 16,000 fingerprint images, acquired from four different fingerprint readers Biometrika, DigitalPersona, and Green Bit readers, and Crossmatch reader, with equal numbers of live and spoof fingerprints that are equally split between training and testing sets. From these only DigitalPersona was selected for the training and testing process inorder to reduce the time required for processing. The training and testing set contains 1000 live images whereas in the training set there a total of 1101 fake images but in the testing dataset it contains 1,400 images.
+\paragraph{Preprocessing}
+The fingerprint image obtained from the LivDet datasets are of low quality due to noise. To get better results it is needed to enhance the image using some good denoising methods. A new method for image denoising is called wave atom transformation. 
+
+\subsection{Feature Extraction}
+Image enhancement is the process of adjusting digital images.
+\subsection{Image Classification}
+The image is finally classified using Convolutional Neural Network (CNN) model. A convolutional neural network (CNN or ConvNet) is one of the most popular algorithms for deep learning, a type of machine learning in which a model learns to perform classification tasks directly from images, video, text, or sound.
+
+\chapter{Conclusion and Future work}
+
+The main limitations of many of the existing anti-spoof methods is their poor image quality of the datasets obtained. 
+\paragraph{}Here the author proposes a method called Wave Atom Transformation.
+
