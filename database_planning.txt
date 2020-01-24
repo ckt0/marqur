@@ -1,6 +1,77 @@
 
-Database 1: Marqurs
+"markers" : [
+    {
+        "marker_id":"String",
+        "title":"String",
+        "author":"String",
+        "date_created":"String",
+        "date_modified":"String",
+        "location":["Double","Double"],
+        "views":"Long",
+        "upvotes":"Long",
+        "downvotes":"Long",
+        "comments":"Long",
+        "thread_id":"String",
+        "reports":"Long",
+        "contents":[
+            {
+                "content_id":"String",
+                "type":"String"
+            }
+        ]
+    }
+]
 
-Sample Record:
+"content" : [
+    {
+        "content_id":"String",
+        "contains_media":"Boolean",
+        "media":[
+            {
+                "media_id":"String",
+                "caption":"String"
+            }
+        ]
+    }
+]
 
-<    id    location_x    location_y    author    content    date_created    date_updated    views    upvotes    downvotes    >
+"threads":[
+    {
+        "thread_id":"String",
+        "marker_id":"String",
+        "author":"String",
+        "date":"String",
+        "content":"String",
+        "upvotes":"Long",
+        "downvotes":"Long",
+        "children_count":"Long",
+        "children":[
+            // threads (Object)...
+        ]
+    }
+]
+
+"users":[
+    {
+        "user_id":"String",
+        "username":"String",
+        "email_id":"String",
+        "date_joined":"String",
+        "upvotes":"Long",
+        "downvotes":"Long",
+        "last_online":"String",
+        "location":["Double","Double"],
+        "markers":[
+               // marker_id (String)...
+        ]
+    }
+]
+
+"reports":[
+    {
+        "author":"String",
+        "date":"String",
+        "type":"String",
+        "description":"String"
+    }
+]
