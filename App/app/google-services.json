@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:111945187890:android:f7f0732865069a5946322b",
         "android_client_info": {
-          "package_name": "com.example.marqur"
+          "package_name": "com.marqur.android"
         }
       },
       "oauth_client": [
@@ -18,7 +18,7 @@
           "client_id": "111945187890-q35dpc1nb11uau6o8sj3h292fad2rpp7.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.marqur",
+            "package_name": "com.marqur.android",
             "certificate_hash": "515da6665879dfaef3d78b2b5568b82d0a6a39f7"
           }
         },

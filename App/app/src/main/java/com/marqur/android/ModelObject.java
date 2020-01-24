@@ -1,4 +1,4 @@
-package com.example.marqur;
+package com.marqur.android;
 
 public enum ModelObject {
 

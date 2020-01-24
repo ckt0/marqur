@@ -14,7 +14,7 @@
 \contentsline {paragraph}{}{5}% 
 \contentsline {paragraph}{}{6}% 
 \contentsline {paragraph}{}{6}% 
-\contentsline {subsection}{\numberline {2.1.2}Conclusions}{6}% 
+\contentsline {subsection}{\numberline {2.1.2}Conclusion}{6}% 
 \contentsline {paragraph}{}{7}% 
 \contentsline {section}{\numberline {2.2}A concept of location-based social network marketing}{7}% 
 \contentsline {subsection}{\numberline {2.2.1}A model of location-based social network marketing }{7}% 

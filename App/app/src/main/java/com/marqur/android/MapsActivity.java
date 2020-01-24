@@ -1,4 +1,4 @@
-package com.example.marqur;
+package com.marqur.android;
 
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
