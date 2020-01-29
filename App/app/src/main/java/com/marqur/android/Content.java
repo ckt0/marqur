@@ -2,18 +2,18 @@ package com.marqur.android;
 
 import java.util.List;
 
-public class contents {
+public class Content {
     public String content_id;
     public Boolean contains_media;
-    public List<String> media;
+    public List<Media> media;
 
 
-    public contents(){
+    public Content(){
 
     }
 
 
-    public contents(String content_id,Boolean contains_media,List media){
+    public Content(String content_id, Boolean contains_media, List<Media> media){
         this.contains_media=contains_media;
         this.content_id=content_id;
         this.media=media;
