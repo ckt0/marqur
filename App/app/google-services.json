@@ -8,52 +8,20 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:111945187890:android:f7f0732865069a5946322b",
-        "android_client_info": {
-          "package_name": "com.example.marqur"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "111945187890-q35dpc1nb11uau6o8sj3h292fad2rpp7.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.marqur",
-            "certificate_hash": "515da6665879dfaef3d78b2b5568b82d0a6a39f7"
-          }
-        },
-        {
-          "client_id": "111945187890-mh2lpmihn4fofrj3d3uh9js5jncsl009.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyABtEcMv1vT207AhwdMQiiONqLOKUluh2U"
-        },
-        {
-          "current_key": "AIzaSyDsTJoHruciXOaoRmVqeEA0fy5D4-wEpM0"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "111945187890-mh2lpmihn4fofrj3d3uh9js5jncsl009.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
         "mobilesdk_app_id": "1:111945187890:android:b2daf9266dbc855e46322b",
         "android_client_info": {
           "package_name": "com.marqur.android"
         }
       },
       "oauth_client": [
+        {
+          "client_id": "111945187890-3o5j7nfnq8i01f6bkhgjmjq88l9053np.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.marqur.android",
+            "certificate_hash": "aeb00bbf4968e29f9c152d3ea5f316af9a0c1b90"
+          }
+        },
         {
           "client_id": "111945187890-n4gotgd0pnb94gp4mpcl97tq0sngcfo6.apps.googleusercontent.com",
           "client_type": 1,
@@ -68,9 +36,6 @@
         }
       ],
       "api_key": [
-        {
-          "current_key": "AIzaSyABtEcMv1vT207AhwdMQiiONqLOKUluh2U"
-        },
         {
           "current_key": "AIzaSyDsTJoHruciXOaoRmVqeEA0fy5D4-wEpM0"
         }
