@@ -4,7 +4,8 @@ import java.util.List;
 
 public class Content {
     public String content_id;
-    public Boolean contains_media;
+    public String text;
+
     public List<Media> media;
 
 
@@ -13,9 +14,14 @@ public class Content {
     }
 
 
-    public Content(String content_id, Boolean contains_media, List<Media> media){
-        this.contains_media=contains_media;
+    public Content(String content_id,String text, List<Media> media){
+        this.text=text;
         this.content_id=content_id;
         this.media=media;
+    }
+
+    public Content(String content_id,String text){
+        this.text=text;
+        this.content_id=content_id;
     }
 }
