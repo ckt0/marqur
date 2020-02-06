@@ -16,7 +16,7 @@
         android:text="@string/enter_title"/>
 
     <EditText
-        android:id="@id/Title"
+        android:id="@+id/ETitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textLongMessage"
@@ -41,7 +41,7 @@
         android:text="@string/enter_description"/>
 
     <EditText
-        android:id="@id/Content"
+        android:id="@+id/EContent"
         android:inputType="textMultiLine"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

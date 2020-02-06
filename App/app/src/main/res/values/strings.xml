@@ -10,6 +10,8 @@
 
     <string name="title_activity_maps">Marqur</string>
     <string name="title">Title</string>
+    <string name="EContent">EContent</string>
+    <string name="ETitle">ETitle</string>
     <string name="enter_title">Enter Title</string>
     <string name="upload">Upload</string>
     <string name="choose">Choose picture</string>

@@ -32,6 +32,13 @@ public class UploadListAdapter extends RecyclerView.Adapter<UploadListAdapter.Vi
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         String fileName=filenamelist.get(position);
         holder.fileNameView.setText(fileName);
+        String fileDone=filedonelist.get(position);
+        if(fileDone.equals("Uploading")){
+            holder.fileDoneView.setImageResource(R.drawable.progress);
+        }
+        else {
+            holder.fileDoneView.setImageResource(R.drawable.done);
+        }
     }
 
     @Override

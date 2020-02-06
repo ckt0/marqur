@@ -3,7 +3,8 @@ package com.marqur.android;
 import java.util.List;
 
 public class Content {
-    public String content_id;
+
+    public String title;
     public String text;
 
     public List<Media> media;
@@ -14,14 +15,16 @@ public class Content {
     }
 
 
-    public Content(String content_id,String text, List<Media> media){
+    public Content(String Title,String text, List<Media> media){
         this.text=text;
-        this.content_id=content_id;
+        this.title=Title;
+
         this.media=media;
     }
 
-    public Content(String content_id,String text){
+    public Content(String title,String text){
+        this.title=title;
         this.text=text;
-        this.content_id=content_id;
+
     }
 }

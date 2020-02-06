@@ -18,6 +18,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -28,6 +29,7 @@ import java.util.Locale;
 public class SignupActivity extends AppCompatActivity implements View.OnClickListener {
 
 
+    private static final String TAG ="Signup" ;
     //defining view objects
     private EditText editTextEmail;
     private EditText editTextPassword;
@@ -117,6 +119,11 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                             //checking if success
                             if (task.isSuccessful()) {
                                 user=firebaseAuth.getCurrentUser();
+                                UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                        .setDisplayName(editTextUsername.getText().toString().trim()).build();
+
+                                user.updateProfile(profileUpdates);
+
                                 String date = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
                                 Users p_user=new Users(user.getUid(), editTextUsername.getText().toString().trim(), email, date, 0, 0);
                                 mDatabase.child("users").child(user.getUid()).setValue(p_user);

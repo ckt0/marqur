@@ -1,6 +1,5 @@
 package com.marqur.android;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.location.Location;
@@ -10,7 +9,7 @@ import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,8 +22,11 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
@@ -39,27 +41,38 @@ public class Addmarker extends AppCompatActivity {
     private RecyclerView muploadlistview;
     private static final String TAG = "addmarker";
     private Button btnChoose;
-    private TextView tTitle;
+    private EditText tTitle;
     private String uniqueID = UUID.randomUUID().toString();
-    private Uri filePath;
+    private Marker marker;
     private List<String> filenameList;
     private List<String> filedonelist;
     private String downloaduri;
-    private TextView tContent;
+    private EditText tContent;
     private String date_created;
+    private List<Uri> phnuri=new ArrayList<>();
     private Button btnDone;
     private String date_modified;
     private List<Double> location=new ArrayList<>();
     private Content icontent;
+    private List<Media> Mmedia=new ArrayList<>();
     private Media media;
+    private int totalitemselected=1;
     Boolean containsimage=false;
     private Location mLastKnownLocation;
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private final int PICK_IMAGE_REQUEST = 71;
     private UploadListAdapter uploadListAdapter;
+    private int count=0;
+
     //Firebase
-    FirebaseStorage storage;
+    private FirebaseStorage  firebaseStorage;
     private StorageReference storageReference;
+    private FirebaseAuth firebaseAuth;
+    private FirebaseUser user;
+    //database reference
+    private DatabaseReference mDatabase;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,11 +86,16 @@ public class Addmarker extends AppCompatActivity {
         btnChoose = (Button) findViewById(R.id.btnChoose);
         muploadlistview= (RecyclerView)findViewById(R.id.Recyclerview);
         btnDone= (Button)findViewById(R.id.Done);
-        tTitle=(TextView)findViewById(R.id.Title);
-        tContent=(TextView)findViewById(R.id.Content);
+        tTitle=(EditText) findViewById(R.id.ETitle);
+        tContent=(EditText) findViewById(R.id.EContent);
         date_modified=date_created = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
-        //firebase reference
-        storageReference = FirebaseStorage.getInstance().getReference();
+        //firebase reference initialise
+        firebaseStorage=FirebaseStorage.getInstance();
+        firebaseAuth = FirebaseAuth.getInstance();
+        storageReference = firebaseStorage.getReference();
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        user=firebaseAuth.getCurrentUser();
+
 
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         getDeviceLocation();
@@ -98,8 +116,11 @@ public class Addmarker extends AppCompatActivity {
         btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                for(int j=0;j<totalitemselected;j++)
+                    uploadImage(phnuri.get(j));
 
-                }
+
+            }
         });
 
 
@@ -119,20 +140,24 @@ public class Addmarker extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK) {
             if (data.getClipData() != null) {
-                int totalitemselected=data.getClipData().getItemCount();
+                totalitemselected=data.getClipData().getItemCount();
+                containsimage=true;
                 for (int i=0;i<totalitemselected;i++){
-                    Uri fileuri=data.getClipData().getItemAt(i).getUri() ;
-                    String filename=getFileName(fileuri);
+
+                    phnuri.add(i,data.getClipData().getItemAt(i).getUri());
+                    String filename = getFileName(data.getClipData().getItemAt(i).getUri());
                     filenameList.add(filename);
+                    filedonelist.add("Uploading");
                     uploadListAdapter.notifyDataSetChanged();
+
+
                 }
 
-                containsimage = true;
-                filePath = data.getData();
+
             }
             else if(data.getData()!=null){
-                filePath = data.getData();
-                uploadImage();
+                containsimage=true;
+                phnuri.add(data.getData());
 
             }
         }
@@ -142,48 +167,52 @@ public class Addmarker extends AppCompatActivity {
     }
 
     //upload
-    private void uploadImage() {
+    private void uploadImage(Uri fileuri) {
+        String filename = getFileName(fileuri);
+        if (fileuri != null) {
 
-        if(filePath != null)
-        {
-            final ProgressDialog progressDialog = new ProgressDialog(this);
-            progressDialog.setTitle("Uploading...");
-            progressDialog.show();
+            StorageReference fileupload = storageReference.child("images").child(filename);
 
-            StorageReference ref = storageReference.child("images/"+ UUID.randomUUID().toString());
-            ref.putFile(filePath)
-                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+
+            fileupload.putFile(fileuri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    fileupload.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            progressDialog.dismiss();
-                            ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                @Override
-                                public void onSuccess(Uri uri) {
-                                    downloaduri= uri.toString();
-                                    //Do what you want with the url
-
-                                }
-
-
-                            });
-                        }})
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            progressDialog.dismiss();
-
+                        public void onSuccess(Uri uri) {
+                            for(int i=0;i<totalitemselected;i++) {
+                                filedonelist.remove(i);
+                                filedonelist.add(i, "done");
+                            }
+                            count++;
+                            uploadListAdapter.notifyDataSetChanged();
+                            String downloadUrl = uri.toString();
+                            media=new Media(downloadUrl,filename);
+                            Mmedia.add(media);
+                            if(count==totalitemselected) {
+                                icontent = new Content(tTitle.getText().toString().trim(), tContent.getText().toString(), Mmedia);
+                                marker = new Marker(uniqueID, tTitle.getText().toString().trim(), user.getDisplayName(), date_created, date_modified, location, 0, 0, 0, 0, 0, icontent);
+                                mDatabase.child("Marker").setValue(marker);
+                                finish();
+                            }
+                            //Do what you want with the url
                         }
-                    })
-                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                            double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
-                                    .getTotalByteCount());
-                            progressDialog.setMessage("Uploaded "+(int)progress+"%");
-                        }
-                    });
+
+                });
+
+            }
+
+                }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    Log.e(TAG,"yeeeeeee"+exception.toString());
+                    // Handle unsuccessful uploads
+                }
+            });
         }
-    }
+
+        }
+
 
     //currentlocation
     private void getDeviceLocation() {
