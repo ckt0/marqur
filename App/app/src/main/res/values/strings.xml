@@ -9,5 +9,15 @@
 
 
     <string name="title_activity_maps">Marqur</string>
+    <string name="title">Title</string>
+    <string name="enter_title">Enter Title</string>
+    <string name="upload">Upload</string>
+    <string name="choose">Choose picture</string>
+    <string name="enter_description">Enter description</string>
+    <string name="add_marker">Add Marker</string>
+    <string name="label">Label</string>
+
+    <string name="todo">TODO</string>
+
 
 </resources>

@@ -15,7 +15,7 @@ public class Marker {
     public Long downvotes;
     public Long comments_count;
     public Long reports;
-    public List<Content> contents;
+    public Content contents;
 
 
     public Marker(){
@@ -23,7 +23,7 @@ public class Marker {
     }
 
 
-    public Marker(String marker_id, String title, String author, String date_created, String date_modified, List<Double> location, Long views, Long upvotes, Long downvotes, Long comments_count, Long reports, List<Content> contents)
+    public Marker(String marker_id, String title, String author, String date_created, String date_modified, List<Double> location, Long views, Long upvotes, Long downvotes, Long comments_count, Long reports, Content contents)
     {
         this.marker_id=marker_id;
         this.title=title;
