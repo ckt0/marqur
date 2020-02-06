@@ -10,7 +10,7 @@
         "views":"Long",
         "upvotes":"Long",
         "downvotes":"Long",
-        "comments":"Long",
+        "replies":"Long",
         "thread_id":"String",
         "reports":"Long",
         "contents":[
@@ -37,17 +37,23 @@
 
 "threads":[
     {
-        "thread_id":"String",
+	"thread_id":"String"
+	"replies":[//replies]
+	"count":"Long"
+    }
+]
+
+"replies":[
+    {
+	"reply_id":"String",
+	"parent_id":"String",
         "marker_id":"String",
         "author":"String",
         "date":"String",
         "content":"String",
         "upvotes":"Long",
         "downvotes":"Long",
-        "children_count":"Long",
-        "children":[
-            // threads (Object)...
-        ]
+        "replies":"Long",
     }
 ]
 
