@@ -16,12 +16,15 @@ import android.content.res.Resources;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -53,7 +56,7 @@ import java.util.Arrays;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends Fragment implements OnMapReadyCallback {
 
     private static final int DEFAULT_ZOOM = 20;
     private static final String TAG = "Mapsactivity";
@@ -69,20 +72,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private FirebaseUser user;
     private DatabaseReference mDatabase;
 
+    private static final String ARG_COUNT = "param1";
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        overridePendingTransition(R.anim.fadein, R.anim.fadeout);
-        setContentView(R.layout.activity_maps);
-        //initialise fused location
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        //Initialise FAB
-        FloatingActionButton fab = findViewById(R.id.fab);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.activity_maps, null, false);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+        SupportMapFragment mapFragment = (SupportMapFragment)this.getChildFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        //initialise fused location
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
+        //Initialise FAB
+        FloatingActionButton fab = getView().findViewById(R.id.fab);
+
+
         //Firebase initialisation
         firebaseAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance().getReference("Marker");
@@ -90,14 +102,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         // Initialize the SDK
-        Places.initialize(getApplicationContext(), getString(R.string.google_maps_key));
+        Places.initialize(getActivity().getApplicationContext(), getString(R.string.google_maps_key));
         // Create a new Places client instance
 
         // Initialize the AutocompleteSupportFragment.
         // Use fields to define the data types to return.
 
         AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
-                getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
+                getChildFragmentManager().findFragmentById(R.id.autocomplete_fragment);
         //Specify the types of place data to return.
         autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.LAT_LNG));
         // Set up a PlaceSelectionListener to handle the response.
@@ -124,7 +136,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 LatLng mapcoord;
                 mapcoord = mMap.getCameraPosition().target;
 
-                startActivity(new Intent(getApplicationContext(), AddMarker.class).putExtra("latitude", mapcoord.latitude).putExtra("longitude", mapcoord.longitude));
+                startActivity(new Intent(getActivity().getApplicationContext(), AddMarker.class).putExtra("latitude", mapcoord.latitude).putExtra("longitude", mapcoord.longitude));
             }
         });
 
@@ -141,6 +153,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         });
+    }
+
+
+    public static MapsActivity newInstance(Integer counter) {
+        MapsActivity fragment = new MapsActivity();
+        Bundle args = new Bundle();
+        args.putInt(ARG_COUNT, counter);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     //dislay the markers
@@ -166,7 +187,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // in a raw resource file.
             boolean success = googleMap.setMapStyle(
                     MapStyleOptions.loadRawResourceStyle(
-                            this, R.raw.style_json));
+                            getContext(), R.raw.style_json));
 
             if (!success) {
                 Log.e(TAG, "Style parsing failed.");
@@ -177,7 +198,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 // Call findCurrentPlace and handle the response (first check that the user has granted permission).
-        if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(getContext(), ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mLocationPermissionGranted = true;
             getDeviceLocation();
         } else {
@@ -199,7 +220,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         try {
             if (mLocationPermissionGranted) {
                 Task<Location> locationResult = mFusedLocationProviderClient.getLastLocation();
-                locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>() {
+                locationResult.addOnCompleteListener(getActivity(), new OnCompleteListener<Location>() {
                     @Override
                     public void onComplete(Task<Location> task) {
                         if (task.isSuccessful() && task.getResult() != null) {
@@ -233,12 +254,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
          * device. The result of the permission request is handled by a callback,
          * onRequestPermissionsResult.
          */
-        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+        if (ContextCompat.checkSelfPermission(getActivity().getApplicationContext(),
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             mLocationPermissionGranted = true;
         } else {
-            ActivityCompat.requestPermissions(this,
+            ActivityCompat.requestPermissions(getActivity(),
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                     PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
         }
