@@ -24,19 +24,18 @@ public class UploadListAdapter extends RecyclerView.Adapter<UploadListAdapter.Vi
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view= LayoutInflater.from(parent.getContext()).inflate(R.layout.recyclerview, parent,false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.recyclerview, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        String fileName=filenamelist.get(position);
+        String fileName = filenamelist.get(position);
         holder.fileNameView.setText(fileName);
-        String fileDone=filedonelist.get(position);
-        if(fileDone.equals("Uploading")){
+        String fileDone = filedonelist.get(position);
+        if (fileDone.equals("Uploading")) {
             holder.fileDoneView.setImageResource(R.drawable.progress);
-        }
-        else {
+        } else {
             holder.fileDoneView.setImageResource(R.drawable.done);
         }
     }
@@ -46,16 +45,17 @@ public class UploadListAdapter extends RecyclerView.Adapter<UploadListAdapter.Vi
         return filenamelist.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
-        View mView;
         public TextView fileNameView;
         public ImageView fileDoneView;
+        View mView;
+
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            mView=itemView;
-            fileNameView=(TextView)mView.findViewById(R.id.nameview);
-            fileDoneView=(ImageView)mView.findViewById(R.id.upload);
+            mView = itemView;
+            fileNameView = (TextView) mView.findViewById(R.id.nameview);
+            fileDoneView = (ImageView) mView.findViewById(R.id.upload);
 
         }
     }

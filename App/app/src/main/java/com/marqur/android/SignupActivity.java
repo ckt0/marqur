@@ -29,24 +29,20 @@ import java.util.Locale;
 public class SignupActivity extends AppCompatActivity implements View.OnClickListener {
 
 
-    private static final String TAG ="Signup" ;
+    private static final String TAG = "Signup";
+    FirebaseUser user;
     //defining view objects
     private EditText editTextEmail;
     private EditText editTextPassword;
     private EditText editTextUsername;
     private Button buttonSignup;
-
     private TextView textViewSignin;
-
     private ProgressDialog progressDialog;
     private Users P_user;
-
     //defining firebaseauth object
     private FirebaseAuth firebaseAuth;
     //database reference
     private DatabaseReference mDatabase;
-
-    FirebaseUser user ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,22 +55,21 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
 
+        //initializing views
+        editTextUsername = (EditText) findViewById(R.id.username);
+        editTextEmail = (EditText) findViewById(R.id.editTextEmail);
+        editTextPassword = (EditText) findViewById(R.id.editTextPassword);
+        textViewSignin = (TextView) findViewById(R.id.textViewSignin);
 
-            //initializing views
-            editTextUsername = (EditText) findViewById(R.id.username);
-            editTextEmail = (EditText) findViewById(R.id.editTextEmail);
-            editTextPassword = (EditText) findViewById(R.id.editTextPassword);
-            textViewSignin = (TextView) findViewById(R.id.textViewSignin);
+        buttonSignup = (Button) findViewById(R.id.buttonSignup);
 
-            buttonSignup = (Button) findViewById(R.id.buttonSignup);
+        progressDialog = new ProgressDialog(this);
 
-            progressDialog = new ProgressDialog(this);
-
-            //attaching listener to button
-            buttonSignup.setOnClickListener(this);
-            textViewSignin.setOnClickListener(this);
+        //attaching listener to button
+        buttonSignup.setOnClickListener(this);
+        textViewSignin.setOnClickListener(this);
         //if getCurrentUser does not returns null
-        user=firebaseAuth.getCurrentUser();
+        user = firebaseAuth.getCurrentUser();
         if (user != null) {
             finish();
 
@@ -82,64 +77,61 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
             startActivity(new Intent(getApplicationContext(), MapsActivity.class));
             // User is signed in
 
-        } else {
-            registerUser();
         }
+    }
+
+
+    private void registerUser() {
+
+        //getting email and password from edit texts
+        String email = editTextEmail.getText().toString().trim();
+        String password = editTextPassword.getText().toString().trim();
+
+        //checking if email and passwords are empty
+        if (TextUtils.isEmpty(email)) {
+            Toast.makeText(this, "Please enter email", Toast.LENGTH_LONG).show();
+            return;
         }
 
+        if (TextUtils.isEmpty(password)) {
+            Toast.makeText(this, "Please enter password", Toast.LENGTH_LONG).show();
+            return;
+        }
 
-        private void registerUser () {
+        //if the email and password are not empty
+        //displaying a progress dialog
 
-            //getting email and password from edit texts
-            String email = editTextEmail.getText().toString().trim();
-            String password = editTextPassword.getText().toString().trim();
+        progressDialog.setMessage("Registering Please Wait...");
+        progressDialog.show();
 
-            //checking if email and passwords are empty
-            if (TextUtils.isEmpty(email)) {
-                Toast.makeText(this, "Please enter email", Toast.LENGTH_LONG).show();
-                return;
-            }
+        //creating a new user
+        firebaseAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        //checking if success
+                        if (task.isSuccessful()) {
+                            user = firebaseAuth.getCurrentUser();
+                            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                    .setDisplayName(editTextUsername.getText().toString().trim()).build();
 
-            if (TextUtils.isEmpty(password)) {
-                Toast.makeText(this, "Please enter password", Toast.LENGTH_LONG).show();
-                return;
-            }
+                            user.updateProfile(profileUpdates);
 
-            //if the email and password are not empty
-            //displaying a progress dialog
-
-            progressDialog.setMessage("Registering Please Wait...");
-            progressDialog.show();
-
-            //creating a new user
-            firebaseAuth.createUserWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            //checking if success
-                            if (task.isSuccessful()) {
-                                user=firebaseAuth.getCurrentUser();
-                                UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                                        .setDisplayName(editTextUsername.getText().toString().trim()).build();
-
-                                user.updateProfile(profileUpdates);
-
-                                String date = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
-                                Users p_user=new Users(user.getUid(), editTextUsername.getText().toString().trim(), email, date, 0, 0);
-                                mDatabase.child("users").child(user.getUid()).setValue(p_user);
-                                finish();
-                                startActivity(new Intent(getApplicationContext(), MapsActivity.class));
-                            } else {
-                                //display some message here
-                                Toast.makeText(SignupActivity.this, "Registration Error", Toast.LENGTH_LONG).show();
-                            }
-                            progressDialog.dismiss();
+                            String date = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
+                            Users p_user = new Users(user.getUid(), editTextUsername.getText().toString().trim(), email, date, 0, 0, null, null);
+                            mDatabase.child("users").child(user.getUid()).setValue(p_user);
+                            finish();
+                            startActivity(new Intent(getApplicationContext(), MapsActivity.class));
+                        } else {
+                            //display some message here
+                            Toast.makeText(SignupActivity.this, "Registration Error", Toast.LENGTH_LONG).show();
                         }
-                    });
+                        progressDialog.dismiss();
+                    }
+                });
 
 
-
-        }
+    }
 
     @Override
     public void onClick(View view) {

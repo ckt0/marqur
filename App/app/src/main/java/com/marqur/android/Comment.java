@@ -12,19 +12,19 @@ public class Comment {
     public Double downvotes;
     public Double reply_count;
 
-    Comment(){
+    Comment() {
 
     }
 
-    Comment(String marker_id,String parent_id,String comment_id,String content,List<String> replies,Double upvotes,Double downvotes,Double reply_count){
+    Comment(String marker_id, String parent_id, String comment_id, String content, List<String> replies, Double upvotes, Double downvotes, Double reply_count) {
 
-        this.marker_id=marker_id;
-        this.parent_id=parent_id;
-        this.comment_id=comment_id;
-        this.content=content;
-        this.replies=replies;
-        this.upvotes=upvotes;
-        this.downvotes=downvotes;
-        this.reply_count=reply_count;
+        this.marker_id = marker_id;
+        this.parent_id = parent_id;
+        this.comment_id = comment_id;
+        this.content = content;
+        this.replies = replies;
+        this.upvotes = upvotes;
+        this.downvotes = downvotes;
+        this.reply_count = reply_count;
     }
 }

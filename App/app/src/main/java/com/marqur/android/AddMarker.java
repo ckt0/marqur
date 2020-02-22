@@ -2,7 +2,6 @@ package com.marqur.android;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
@@ -16,12 +15,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnCompleteListener;
+import com.firebase.geofire.GeoFire;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -29,6 +25,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.google.type.LatLng;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -37,41 +34,41 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-public class Addmarker extends AppCompatActivity {
-    private RecyclerView muploadlistview;
+public class AddMarker extends AppCompatActivity {
     private static final String TAG = "addmarker";
+    private final int PICK_IMAGE_REQUEST = 71;
+    private RecyclerView muploadlistview;
     private Button btnChoose;
     private EditText tTitle;
     private String uniqueID = UUID.randomUUID().toString();
     private Marker marker;
     private List<String> filenameList;
     private List<String> filedonelist;
-    private String downloaduri;
+    private LatLng location;
     private EditText tContent;
     private String date_created;
-    private List<Uri> phnuri=new ArrayList<>();
+    private List<Uri> phnuri = new ArrayList<>();
     private Button btnDone;
     private String date_modified;
-    private List<Double> location=new ArrayList<>();
     private Content icontent;
-    private List<Media> Mmedia=new ArrayList<>();
+    private List<Media> Mmedia = new ArrayList<>();
     private Media media;
-    private int totalitemselected=1;
-    Boolean containsimage=false;
-    private Location mLastKnownLocation;
-    private FusedLocationProviderClient mFusedLocationProviderClient;
-    private final int PICK_IMAGE_REQUEST = 71;
+    // Geofire
+    private GeoFire coordinates;
+    private int totalitemselected = 0;
+    private Boolean containsimage = false;
     private UploadListAdapter uploadListAdapter;
-    private int count=0;
+    private int count = 0;
 
     //Firebase
-    private FirebaseStorage  firebaseStorage;
+    private FirebaseStorage firebaseStorage;
     private StorageReference storageReference;
     private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
     //database reference
     private DatabaseReference mDatabase;
-
+    private Double latitude;
+    private Double longitude;
 
 
     @Override
@@ -80,28 +77,35 @@ public class Addmarker extends AppCompatActivity {
         overridePendingTransition(R.anim.fadein, R.anim.fadeout);
         setContentView(R.layout.activity_addmarker);
         //Initialize Views and get current date
-        filenameList=new ArrayList<>();
-        filedonelist=new ArrayList<>();
-        uploadListAdapter =new UploadListAdapter(filenameList,filedonelist);
+        filenameList = new ArrayList<>();
+        filedonelist = new ArrayList<>();
+
+
+        uploadListAdapter = new UploadListAdapter(filenameList, filedonelist);
         btnChoose = (Button) findViewById(R.id.btnChoose);
-        muploadlistview= (RecyclerView)findViewById(R.id.Recyclerview);
-        btnDone= (Button)findViewById(R.id.Done);
-        tTitle=(EditText) findViewById(R.id.ETitle);
-        tContent=(EditText) findViewById(R.id.EContent);
-        date_modified=date_created = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
+        muploadlistview = (RecyclerView) findViewById(R.id.Recyclerview);
+        btnDone = (Button) findViewById(R.id.Done);
+        tTitle = (EditText) findViewById(R.id.ETitle);
+        tContent = (EditText) findViewById(R.id.EContent);
+        date_modified = date_created = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
         //firebase reference initialise
-        firebaseStorage=FirebaseStorage.getInstance();
+        firebaseStorage = FirebaseStorage.getInstance();
         firebaseAuth = FirebaseAuth.getInstance();
         storageReference = firebaseStorage.getReference();
         mDatabase = FirebaseDatabase.getInstance().getReference();
-        user=firebaseAuth.getCurrentUser();
+        user = firebaseAuth.getCurrentUser();
+
+        //Geofire initialisation
+        coordinates = new GeoFire(mDatabase);
 
 
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        getDeviceLocation();
+        //find the current panned coordinates
+        getMapLocation();
+
         muploadlistview.setLayoutManager(new LinearLayoutManager(this));
         muploadlistview.setHasFixedSize(true);
         muploadlistview.setAdapter(uploadListAdapter);
+
 
         btnChoose.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -111,18 +115,28 @@ public class Addmarker extends AppCompatActivity {
         });
 
 
-
         //Upload marker to firebase
         btnDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                for(int j=0;j<totalitemselected;j++)
-                    uploadImage(phnuri.get(j));
+                if (containsimage) {
+                    for (int j = 0; j < totalitemselected; j++)
+                        uploadImage(phnuri.get(j));
 
-
+                } else {
+                    noimage();
+                }
             }
         });
 
+
+    }
+
+    private void getMapLocation() {
+        Intent i = getIntent();
+
+        latitude = i.getDoubleExtra("latitude", 0);
+        longitude = i.getDoubleExtra("longitude", 0);
 
 
     }
@@ -130,7 +144,7 @@ public class Addmarker extends AppCompatActivity {
     private void chooseImage() {
         Intent intent = new Intent();
         intent.setType("image/*");
-        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,true);
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
     }
@@ -138,13 +152,13 @@ public class Addmarker extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK) {
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK) {
             if (data.getClipData() != null) {
-                totalitemselected=data.getClipData().getItemCount();
-                containsimage=true;
-                for (int i=0;i<totalitemselected;i++){
+                totalitemselected = data.getClipData().getItemCount();
+                containsimage = true;
+                for (int i = 0; i < totalitemselected; i++) {
 
-                    phnuri.add(i,data.getClipData().getItemAt(i).getUri());
+                    phnuri.add(i, data.getClipData().getItemAt(i).getUri());
                     String filename = getFileName(data.getClipData().getItemAt(i).getUri());
                     filenameList.add(filename);
                     filedonelist.add("Uploading");
@@ -154,15 +168,17 @@ public class Addmarker extends AppCompatActivity {
                 }
 
 
-            }
-            else if(data.getData()!=null){
-                containsimage=true;
+            } else if (data.getData() != null) {
+                containsimage = true;
+                totalitemselected++;
                 phnuri.add(data.getData());
-
+                String filename = getFileName(data.getData());
+                filenameList.add(filename);
+                filedonelist.add("Uploading");
+                uploadListAdapter.notifyDataSetChanged();
             }
-        }
-        else{
-            containsimage=false;
+        } else {
+            containsimage = false;
         }
     }
 
@@ -180,83 +196,59 @@ public class Addmarker extends AppCompatActivity {
                     fileupload.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
                         public void onSuccess(Uri uri) {
-                            for(int i=0;i<totalitemselected;i++) {
+                            for (int i = 0; i < totalitemselected; i++) {
                                 filedonelist.remove(i);
                                 filedonelist.add(i, "done");
                             }
                             count++;
                             uploadListAdapter.notifyDataSetChanged();
                             String downloadUrl = uri.toString();
-                            media=new Media(downloadUrl,filename);
+                            media = new Media(downloadUrl, filename);
                             Mmedia.add(media);
-                            if(count==totalitemselected) {
+                            if (count == totalitemselected) {
+
+
                                 icontent = new Content(tTitle.getText().toString().trim(), tContent.getText().toString(), Mmedia);
-                                marker = new Marker(uniqueID, tTitle.getText().toString().trim(), user.getDisplayName(), date_created, date_modified, location, 0, 0, 0, 0, 0, icontent);
-                                mDatabase.child("Marker").setValue(marker);
+                                //marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(), date_created, date_modified, location, 0, 0, 0, 0, 0, icontent);
+                                mDatabase.child("Marker").child(uniqueID).setValue(marker);
+                                ;
+                                mDatabase.child("users").child(user.getUid()).child("location").setValue(location);
+                                mDatabase.child("users").child(user.getUid()).child("markers").child(uniqueID).setValue("");
+
                                 finish();
                             }
                             //Do what you want with the url
                         }
 
-                });
+                    });
 
-            }
+                }
 
-                }).addOnFailureListener(new OnFailureListener() {
+            }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
-                    Log.e(TAG,"yeeeeeee"+exception.toString());
+                    Log.e(TAG, "yeeeeeee" + exception.toString());
                     // Handle unsuccessful uploads
                 }
             });
         }
 
-        }
-
-
-    //currentlocation
-    private void getDeviceLocation() {
-        /*
-         * Get the best and most recent location of the device, which may be null in rare
-         * cases when a location is not available.
-         */
-        try {
-
-                Task<Location> locationResult = mFusedLocationProviderClient.getLastLocation();
-                locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>() {
-                    @Override
-                    public void onComplete(Task<Location> task) {
-                        if (task.isSuccessful() && task.getResult() != null) {
-                            mLastKnownLocation = task.getResult();
-                            location.add(mLastKnownLocation.getLatitude());
-                            location.add(mLastKnownLocation.getLongitude());
-                            }
-                        else {
-                            Log.d(TAG, "Current location is null. Using defaults.");
-                            Log.e(TAG, "Exception: %s", task.getException());
-
-                        }
-                    }
-                });
-
-        } catch (SecurityException e) {
-            Log.e("Exception: %s", e.getMessage());
-        }
     }
 
-    public String getFileName(Uri uri){
-        String result=null;
-        if(uri.getScheme().equals("content")) {
-            Cursor cursor=getContentResolver().query(uri,null,null,null,null);
-            try{
-                if (cursor!=null&&cursor.moveToFirst()){
-                    result=cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+
+    public String getFileName(Uri uri) {
+        String result = null;
+        if (uri.getScheme().equals("content")) {
+            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+            try {
+                if (cursor != null && cursor.moveToFirst()) {
+                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
                 }
-            }finally {
+            } finally {
                 cursor.close();
             }
         }
-        if(result == null) {
+        if (result == null) {
             result = uri.getPath();
             int cut = result.lastIndexOf('/');
             if (cut != -1) {
@@ -264,7 +256,19 @@ public class Addmarker extends AppCompatActivity {
             }
         }
         return result;
-        }
+    }
 
+    private void noimage() {
+
+
+        icontent = new Content(tTitle.getText().toString().trim(), tContent.getText().toString(), null);
+        //marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(), date_created, date_modified, location, 0, 0, 0, 0, 0, icontent);
+        mDatabase.child("Marker").child(uniqueID).setValue(marker);
+
+        mDatabase.child("users").child(user.getUid()).child("location").setValue(location);
+        mDatabase.child("users").child(user.getUid()).child("markers").child(uniqueID).setValue("");
+
+        finish();
+    }
 
 }

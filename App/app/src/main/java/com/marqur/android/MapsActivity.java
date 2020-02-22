@@ -30,10 +30,9 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
-import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
@@ -41,6 +40,13 @@ import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.Arrays;
 
@@ -49,14 +55,19 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
-    private GoogleMap mMap;
-    private static final int DEFAULT_ZOOM = 17;
+    private static final int DEFAULT_ZOOM = 20;
     private static final String TAG = "Mapsactivity";
-    private boolean mLocationPermissionGranted;
-    private final LatLng mDefaultLocation = new LatLng(-33.8523341, 151.2106085);
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
+    private final LatLng mDefaultLocation = new LatLng(-33.8523341, 151.2106085);
+    private GoogleMap mMap;
+    private boolean mLocationPermissionGranted;
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private Location mLastKnownLocation;
+
+    //Firebase refernces
+    private FirebaseAuth firebaseAuth;
+    private FirebaseUser user;
+    private DatabaseReference mDatabase;
 
 
     @Override
@@ -72,6 +83,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        //Firebase initialisation
+        firebaseAuth = FirebaseAuth.getInstance();
+        mDatabase = FirebaseDatabase.getInstance().getReference("Marker");
+        user = firebaseAuth.getCurrentUser();
+
 
         // Initialize the SDK
         Places.initialize(getApplicationContext(), getString(R.string.google_maps_key));
@@ -89,10 +105,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onPlaceSelected(Place place) {
 
-                mMap.addMarker(new MarkerOptions().position(place.getLatLng()).icon(BitmapDescriptorFactory.fromResource(R.mipmap.marker)));
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 17.0f));
+
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), DEFAULT_ZOOM));
                 // TODO: Get info about the selected place.
-               // Log.i(TAG, "Place: " + place.getName() + ", " + place.getId());
             }
 
             @Override
@@ -102,20 +117,49 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-    //Floating action button
+        //Floating action button
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(getApplicationContext(), Addmarker.class));
+                LatLng mapcoord;
+                mapcoord = mMap.getCameraPosition().target;
+
+                startActivity(new Intent(getApplicationContext(), AddMarker.class).putExtra("latitude", mapcoord.latitude).putExtra("longitude", mapcoord.longitude));
+            }
+        });
+
+
+        //Callled when database data changes(ie.when a marker is added)
+        mDatabase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                displayonmap(dataSnapshot);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
             }
         });
     }
 
+    //dislay the markers
+    private void displayonmap(DataSnapshot dataSnapshot) {
+
+
+    }
 
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                return false;
+                //TODO create a new activity to display the details of marker
+            }
+        });
         //removing the POI and Transits
         try {
             // Customise the styling of the base map using a JSON object defined
@@ -132,22 +176,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
 
-
-
-
 // Call findCurrentPlace and handle the response (first check that the user has granted permission).
         if (ContextCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            mLocationPermissionGranted=true;
+            mLocationPermissionGranted = true;
+            getDeviceLocation();
+        } else {
+            getLocationPermission();
             getDeviceLocation();
         }
 
-        else {
-            getLocationPermission();
-            // A local method to request required permissions;
-            // See https://developer.android.com/training/permissions/requesting
-           // getLocationPermission();
-        }
-}
+
+        //TODO display markers that are around the current location
+
+
+    }
+
     private void getDeviceLocation() {
         /*
          * Get the best and most recent location of the device, which may be null in rare
@@ -164,7 +207,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             // Set the map's camera position to the current location of the device.
 
                             mMap.clear();
-                            mMap.addMarker(new MarkerOptions().position(new LatLng(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude())).icon(BitmapDescriptorFactory.fromResource(R.mipmap.marker)));
+
                             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                     new LatLng(mLastKnownLocation.getLatitude(),
                                             mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
@@ -215,6 +258,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mLocationPermissionGranted = true;
+                    getDeviceLocation();
                 }
             }
         }

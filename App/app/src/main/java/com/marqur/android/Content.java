@@ -10,21 +10,17 @@ public class Content {
     public List<Media> media;
 
 
-    public Content(){
+    public Content() {
 
     }
 
 
-    public Content(String Title,String text, List<Media> media){
-        this.text=text;
-        this.title=Title;
+    public Content(String Title, String text, List<Media> media) {
+        this.text = text;
+        this.title = Title;
 
-        this.media=media;
+        this.media = media;
     }
 
-    public Content(String title,String text){
-        this.title=title;
-        this.text=text;
 
-    }
 }
