@@ -25,23 +25,24 @@
             android:value="@string/google_maps_key" />
 
         <activity android:name="com.marqur.android.MainActivity"
-		android:label="@string/title_activity_maps">
+		android:label="@string/title_activity_map_view">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.VIEW" />
                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
         <activity android:name=".SignupActivity"/>
         <activity android:name="com.marqur.android.MapsActivity"
-            android:label="@string/title_activity_maps">
+            android:label="@string/title_activity_signup">
 
         </activity>
 
         <activity android:name="com.marqur.android.LoginActivity"
-            android:label="@string/title_activity_maps"/>
+            android:label="@string/title_activity_login"/>
         <activity android:name="com.marqur.android.AddMarker"
-            android:label="@string/title_activity_maps">
+            android:label="@string/title_activity_map_add_marker">
         </activity>
 
     </application>

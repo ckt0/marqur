@@ -142,7 +142,7 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
 
         if (view == textViewSignin) {
             //open login activity when user taps on the already registered textview
-            startActivity(new Intent(this, LoginActivity.class));
+            startActivity(new Intent(this, MapsActivity.class));
         }
 
     }

@@ -7,17 +7,20 @@
     <string name="blue">BLUE</string>
     <string name="green">GREEN</string>
 
-
-    <string name="title_activity_maps">Marqur</string>
+    <string name="title_activity_map_view">Map</string>
+    <string name="title_activity_map_add_marker">Add Marker</string>
+    <string name="title_activity_main">Main</string>
+    <string name="title_activity_login">Login</string>
+    <string name="title_activity_signup">Sign Up</string>
     <string name="title">Title</string>
-    <string name="EContent">EContent</string>
-    <string name="ETitle">ETitle</string>
+    <string name="label">Label</string>
     <string name="enter_title">Enter Title</string>
+    <string name="edit_marker_content">Edit Content</string>
+    <string name="edit_marker_title">Edit Title</string>
     <string name="upload">Upload</string>
-    <string name="choose">Choose picture</string>
+    <string name="choose_picture">Choose picture</string>
     <string name="enter_description">Enter description</string>
     <string name="add_marker">Add Marker</string>
-    <string name="label">Label</string>
 
     <string name="todo">TODO</string>
 

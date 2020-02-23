@@ -10,13 +10,13 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/Title"
+        android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/enter_title"/>
 
     <EditText
-        android:id="@+id/ETitle"
+        android:id="@+id/edit_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textLongMessage"
@@ -26,22 +26,22 @@
     </EditText>
 
     <Button
-        android:id="@+id/btnChoose"
+        android:id="@+id/button_choose"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="0"
-        android:text="@string/choose"
-        tools:text="@string/choose" />
+        android:text="@string/choose_picture"
+        tools:text="@string/choose_picture" />
 
 
     <TextView
-        android:id="@+id/Content"
+        android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/enter_description"/>
 
     <EditText
-        android:id="@+id/EContent"
+        android:id="@+id/edit_content"
         android:inputType="textMultiLine"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -51,14 +51,14 @@
     </EditText>
 
     <Button
-        android:id="@+id/Done"
+        android:id="@+id/button_done"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="0"
         android:text="@string/add_marker" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/Recyclerview"
+        android:id="@+id/upload_queue"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="9" />

@@ -82,11 +82,11 @@ public class AddMarker extends AppCompatActivity {
 
 
         uploadListAdapter = new UploadListAdapter(filenameList, filedonelist);
-        btnChoose = (Button) findViewById(R.id.btnChoose);
-        muploadlistview = (RecyclerView) findViewById(R.id.Recyclerview);
-        btnDone = (Button) findViewById(R.id.Done);
-        tTitle = (EditText) findViewById(R.id.ETitle);
-        tContent = (EditText) findViewById(R.id.EContent);
+        btnChoose = (Button) findViewById(R.id.button_choose);
+        muploadlistview = (RecyclerView) findViewById(R.id.upload_queue);
+        btnDone = (Button) findViewById(R.id.button_done);
+        tTitle = (EditText) findViewById(R.id.edit_title);
+        tContent = (EditText) findViewById(R.id.edit_content);
         date_modified = date_created = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
         //firebase reference initialise
         firebaseStorage = FirebaseStorage.getInstance();
