@@ -29,17 +29,17 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".SignupActivity"/>
-        <activity android:name="com.marqur.android.MapsActivity"
-            android:label="@string/title_activity_signup">
-
-        </activity>
+        <activity android:name="com.marqur.android.SignupActivity"
+            android:label="@string/title_activity_signup" />
 
         <activity android:name="com.marqur.android.LoginActivity"
-            android:label="@string/title_activity_login"/>
+            android:label="@string/title_activity_login" />
+
+        <activity android:name="com.marqur.android.MapsActivity"
+            android:label="@string/title_activity_map_view" />
+
         <activity android:name="com.marqur.android.AddMarker"
-            android:label="@string/title_activity_map_add_marker">
-        </activity>
+            android:label="@string/title_activity_map_add_marker" />
 
     </application>
 
