@@ -57,12 +57,12 @@
             android:text="Signup" />
 
         <TextView
-            android:text="Already Registered? Signin Here"
             android:id="@+id/textViewSignin"
-            android:textAlignment="center"
-            android:layout_margin="15dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_margin="15dp"
+            android:text="Already Registered? Sign-in Here"
+            android:textAlignment="center" />
 
     </LinearLayout>
 

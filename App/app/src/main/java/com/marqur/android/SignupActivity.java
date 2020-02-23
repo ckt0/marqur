@@ -48,7 +48,7 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         overridePendingTransition(R.anim.fadein, R.anim.fadeout);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_signup);
 
         //initializing firebase auth object
         firebaseAuth = FirebaseAuth.getInstance();
@@ -60,7 +60,6 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
         editTextEmail = (EditText) findViewById(R.id.editTextEmail);
         editTextPassword = (EditText) findViewById(R.id.editTextPassword);
         textViewSignin = (TextView) findViewById(R.id.textViewSignin);
-
         buttonSignup = (Button) findViewById(R.id.buttonSignup);
 
         progressDialog = new ProgressDialog(this);
@@ -74,7 +73,7 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
             finish();
 
             //and open profile activity
-            startActivity(new Intent(getApplicationContext(), MapsActivity.class));
+//            startActivity(new Intent(getApplicationContext(), MapsActivity.class));
             // User is signed in
 
         }
@@ -121,10 +120,10 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                             Users p_user = new Users(user.getUid(), editTextUsername.getText().toString().trim(), email, date, 0, 0, null, null);
                             mDatabase.child("users").child(user.getUid()).setValue(p_user);
                             finish();
-                            startActivity(new Intent(getApplicationContext(), MapsActivity.class));
+//                            startActivity(new Intent(getApplicationContext(), MapsActivity.class));
                         } else {
                             //display some message here
-                            Toast.makeText(SignupActivity.this, "Registration Error", Toast.LENGTH_LONG).show();
+                            Toast.makeText(SignupActivity.this, "Sign-up Error", Toast.LENGTH_LONG).show();
                         }
                         progressDialog.dismiss();
                     }
@@ -142,7 +141,8 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
 
         if (view == textViewSignin) {
             //open login activity when user taps on the already registered textview
-            startActivity(new Intent(this, MapsActivity.class));
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
         }
 
     }
