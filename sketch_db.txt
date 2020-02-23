@@ -1,0 +1,34 @@
+main comment 1
+	first reply to main 1 
+		reply to reply to main 1
+	second reply to main 1
+
+
+
+Marker -> comment_id 
+Marker -> replies[]
+
+Comment {
+	marker_id: String
+	parent_id: String
+	comment_id: String
+	content: String
+	replies: [comment_id1, comment_id2]
+}
+
+
+
+
+
+
+Test Marker
+comment_id: 111
+replies: [
+]
+
+
+
+Marker
+-> replies
+	-> comment1
+		->comment2
