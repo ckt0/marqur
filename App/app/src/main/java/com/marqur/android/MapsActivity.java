@@ -51,7 +51,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.Arrays;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Collections;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
@@ -102,7 +104,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
 
 
         // Initialize the SDK
-        Places.initialize(getActivity().getApplicationContext(), getString(R.string.google_maps_key));
+        Places.initialize(getActivity(), getString(R.string.google_maps_key));
         // Create a new Places client instance
 
         // Initialize the AutocompleteSupportFragment.
@@ -111,11 +113,11 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
                 getChildFragmentManager().findFragmentById(R.id.autocomplete_fragment);
         //Specify the types of place data to return.
-        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.LAT_LNG));
+        autocompleteFragment.setPlaceFields(Collections.singletonList(Place.Field.LAT_LNG));
         // Set up a PlaceSelectionListener to handle the response.
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
-            public void onPlaceSelected(Place place) {
+            public void onPlaceSelected(@NotNull Place place) {
 
 
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), DEFAULT_ZOOM));
@@ -125,7 +127,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             @Override
             public void onError(Status status) {
                 // TODO: Handle the error.
-                //Log.i(TAG, "An error occurred: " + status);
+                Log.i(TAG, "An error occurred: " + status);
             }
         });
 
@@ -222,7 +224,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
                 Task<Location> locationResult = mFusedLocationProviderClient.getLastLocation();
                 locationResult.addOnCompleteListener(getActivity(), new OnCompleteListener<Location>() {
                     @Override
-                    public void onComplete(Task<Location> task) {
+                    public void onComplete(@NotNull Task<Location> task) {
                         if (task.isSuccessful() && task.getResult() != null) {
                             mLastKnownLocation = task.getResult();
                             // Set the map's camera position to the current location of the device.
