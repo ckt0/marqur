@@ -52,7 +52,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             //close this activity
             finish();
             //opening profile activity
-            startActivity(new Intent(getApplicationContext(), MapsActivity.class));
+//            startActivity(new Intent(getApplicationContext(), MapsActivity.class));
         }
 
         //initializing views
@@ -102,7 +102,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             //start the profile activity
                             finish();
 
-                            startActivity(new Intent(getApplicationContext(), MapsActivity.class));
+//                            startActivity(new Intent(getApplicationContext(), MapsActivity.class));
+                        }
+                        else {
+                            //display some message here
+                            Toast.makeText(LoginActivity.this, "Login Error", Toast.LENGTH_LONG).show();
                         }
                     }
                 });
@@ -111,13 +115,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     public void onClick(View view) {
+
         if (view == buttonSignIn) {
             userLogin();
         }
 
         if (view == textViewSignup) {
-            finish();
             startActivity(new Intent(this, SignupActivity.class));
+            finish();
         }
     }
 }
