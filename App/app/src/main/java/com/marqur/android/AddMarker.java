@@ -16,10 +16,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.geofire.GeoFire;
+import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -67,6 +69,7 @@ public class AddMarker extends AppCompatActivity {
     private FirebaseUser user;
     //database reference
     private DatabaseReference mDatabase;
+    private DatabaseReference mgeofireref;
     private Double latitude;
     private Double longitude;
 
@@ -93,10 +96,10 @@ public class AddMarker extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
         storageReference = firebaseStorage.getReference();
         mDatabase = FirebaseDatabase.getInstance().getReference();
+        mgeofireref=mDatabase.child("Marker").child(uniqueID);
         user = firebaseAuth.getCurrentUser();
 
-        //Geofire initialisation
-        coordinates = new GeoFire(mDatabase);
+
 
 
         //find the current panned coordinates
@@ -126,7 +129,21 @@ public class AddMarker extends AppCompatActivity {
                 } else {
                     noimage();
                 }
+                coordinates=new GeoFire(mgeofireref);
+                coordinates.setLocation("location", new GeoLocation(latitude, longitude), new GeoFire.CompletionListener() {
+                    @Override
+                    public void onComplete(String key, DatabaseError error) {
+                        if (error != null) {
+                            System.err.println("There was an error saving the location to GeoFire: " + error);
+                        } else {
+                            System.out.println("Location saved on server successfully!");
+                        }
+                    }
+
+
+                });
             }
+
         });
 
 
@@ -209,7 +226,7 @@ public class AddMarker extends AppCompatActivity {
 
 
                                 icontent = new Content(tTitle.getText().toString().trim(), tContent.getText().toString(), Mmedia);
-                                //marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(), date_created, date_modified, location, 0, 0, 0, 0, 0, icontent);
+                                marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(), date_created, date_modified, 0, 0, 0, 0, 0, icontent);
                                 mDatabase.child("Marker").child(uniqueID).setValue(marker);
                                 ;
                                 mDatabase.child("users").child(user.getUid()).child("location").setValue(location);
@@ -262,7 +279,7 @@ public class AddMarker extends AppCompatActivity {
 
 
         icontent = new Content(tTitle.getText().toString().trim(), tContent.getText().toString(), null);
-        //marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(), date_created, date_modified, location, 0, 0, 0, 0, 0, icontent);
+        marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(), date_created, date_modified, 0, 0, 0, 0, 0, icontent);
         mDatabase.child("Marker").child(uniqueID).setValue(marker);
 
         mDatabase.child("users").child(user.getUid()).child("location").setValue(location);
