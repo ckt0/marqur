@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <androidx.viewpager2.widget.ViewPager2
+    <androidx.viewpager.widget.ViewPager
         android:id="@+id/view_pager"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -19,6 +19,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="1dp"
         android:layout_weight="1"
-        app:tabGravity="fill" />
+        app:tabGravity="fill"
+        app:tabIndicatorColor="@color/green_300"
+        app:tabMode="fixed"/>
 
 </LinearLayout>

@@ -1,28 +1,55 @@
 package com.marqur.android;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.fragment.app.FragmentStatePagerAdapter;
 
 
-public class ViewPagerAdapter extends FragmentStateAdapter {
-    private static final int CARD_ITEM_SIZE = 3;
+public class ViewPagerAdapter extends FragmentPagerAdapter {
 
-    public ViewPagerAdapter(@NonNull FragmentActivity fragmentActivity) {
-        super(fragmentActivity);
+    private static final int NUM_PAGES = 3;
+    private String pageTitles[] = new String[] { "Discover", "Browse", "Explore" };
+    private Context context;
+
+    public ViewPagerAdapter(@NonNull FragmentManager fragmentManager) {
+        super(fragmentManager);
+        this.context = context;
     }
 
-    @NonNull
+
     @Override
-    public Fragment createFragment(int position) {
-        return MapsActivity.newInstance(position);
+    public int getCount() {
+        return NUM_PAGES;
     }
 
+//    @Override
+//    public Fragment getItem(int position) {
+//        return new MapFragment();
+//    }
+
+    // Returns the fragment to display for that page
     @Override
-    public int getItemCount() {
-        return CARD_ITEM_SIZE;
+    public Fragment getItem(int position) {
+        switch (position) {
+            case 0:
+                return MapsActivity.newInstance();
+            case 1:
+                return MapsActivity.newInstance();
+            case 2:
+                return MapsActivity.newInstance();
+            default:
+                return null;
+        }
     }
 
+    // Returns the page title for the top indicator
+    @Override
+    public CharSequence getPageTitle(int position) {
+        return pageTitles[position];
+    }
 
 }

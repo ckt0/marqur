@@ -73,17 +73,25 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
     private FirebaseUser user;
     private DatabaseReference mDatabase;
 
-    private static final String ARG_COUNT = "param1";
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_maps, null, false);
+        View mapView = inflater.inflate(R.layout.activity_maps, null, false);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment)this.getChildFragmentManager()
                 .findFragmentById(R.id.map);
+
         mapFragment.getMapAsync(this);
-        return view;
+
+        return mapView;
     }
 
     @Override
@@ -144,6 +152,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
 
         //Callled when database data changes(ie.when a marker is added)
         mDatabase.addValueEventListener(new ValueEventListener() {
+
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 displayonmap(dataSnapshot);
@@ -156,19 +165,23 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         });
     }
 
-    // true if we intercep MOVE events in order to prevent the view pager to swipe views
-    private boolean intercepMove = false;
 
 
-    public static MapsActivity newInstance(Integer counter) {
-        MapsActivity fragment = new MapsActivity();
+
+
+
+    public static MapsActivity newInstance() {
+        MapsActivity mapFragment = new MapsActivity();
         Bundle args = new Bundle();
-        args.putInt(ARG_COUNT, counter);
-        fragment.setArguments(args);
-        return fragment;
+        mapFragment.setArguments(args);
+        return mapFragment;
     }
 
-    //dislay the markers
+
+
+
+
+    //Dislay the markers
     private void displayonmap(DataSnapshot dataSnapshot) {
 
 
