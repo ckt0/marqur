@@ -1,19 +1,20 @@
 package com.marqur.android;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.MotionEvent;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.viewpager2.widget.ViewPager2;
+import androidx.fragment.app.FragmentActivity;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayoutMediator;
 
 // MainActivity - Handles startup stuff and hosts the viewpager that connects all the fragments
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends FragmentActivity {
 
-    TabLayout navBar;
-    ViewPager2 viewPager;
+    private TabLayout navBar;
+    private ViewPager viewPager;
+    private PagerAdapter pagerAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,11 +24,24 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_viewpager);
         viewPager = findViewById(R.id.view_pager);
         navBar = findViewById(R.id.navBar);
-        viewPager.setAdapter(createCardAdapter());
-        new TabLayoutMediator(navBar, viewPager, (tab, position) -> tab.setText("Tab " + (position + 1))).attach();
+        pagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+        viewPager.setAdapter(pagerAdapter);
+        viewPager.setPageTransformer(true, new ZoomOutPageTransformer());
+        navBar.setupWithViewPager(viewPager);
+//        new TabLayoutMediator(navBar, viewPager, (tab, position) -> tab.setText("Tab " + (position + 1))).attach();
+
     }
 
-    private ViewPagerAdapter createCardAdapter() {
-        return new ViewPagerAdapter(this);
+    @Override
+    public void onBackPressed() {
+        if (viewPager.getCurrentItem() == 0) {
+            // If the user is currently looking at the first step, allow the system to handle the
+            // Back button. This calls finish() on this activity and pops the back stack.
+            super.onBackPressed();
+        } else {
+            // Otherwise, select the previous step.
+            viewPager.setCurrentItem(viewPager.getCurrentItem() - 1);
+        }
     }
+
 }
