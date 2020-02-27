@@ -5,14 +5,18 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
-public class ARActivity extends AppCompatActivity {
+public class ARActivity extends Fragment {
 
     private Camera mCamera;
     private ARCameraPreview mPreview;
@@ -23,21 +27,30 @@ public class ARActivity extends AppCompatActivity {
     private boolean cameraFront = false;
     public static Bitmap bitmap;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_ar);
 
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        myContext = this;
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View root = inflater.inflate(R.layout.activity_ar, null);
+        return root;
+    }
+
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        // you can add listener of elements here
+          /*Button mButton = (Button) view.findViewById(R.id.button);
+            mButton.setOnClickListener(this); */
+//        mTextView = view.findViewById(R.id.mTextView);
+//        mLinearLayout = (LinearLayout)view;
+
+        getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        myContext = getActivity();
 
         mCamera =  Camera.open();
         mCamera.setDisplayOrientation(90);
-        cameraPreview = (LinearLayout) findViewById(R.id.cPreview);
+        cameraPreview = (LinearLayout) getView().findViewById(R.id.cPreview);
         mPreview = new ARCameraPreview(myContext, mCamera);
         cameraPreview.addView(mPreview);
 
-        capture = (Button) findViewById(R.id.btnCam);
+        capture = (Button) getView().findViewById(R.id.btnCam);
         capture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -45,7 +58,7 @@ public class ARActivity extends AppCompatActivity {
             }
         });
 
-        switchCamera = (Button) findViewById(R.id.btnSwitch);
+        switchCamera = (Button) getView().findViewById(R.id.btnSwitch);
         switchCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -66,6 +79,19 @@ public class ARActivity extends AppCompatActivity {
         mCamera.startPreview();
 
     }
+
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+//        mFrgAct = getActivity();
+//        mIntent = mFrgAct.getIntent(); //  Intent intent = new Intent(getActivity().getIntent());
+    }
+
+//    @Override
+//    public void onCreate(Bundle savedInstanceState) {
+//        super.onCreate(savedInstanceState);
+////        setContentView(R.layout.activity_ar);
+//
+//    }
 
     private int findFrontFacingCamera() {
 
@@ -149,7 +175,7 @@ public class ARActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onPause() {
+    public void onPause() {
         super.onPause();
         //when on Pause, release camera in order to be used from other applications
         releaseCamera();
@@ -170,10 +196,18 @@ public class ARActivity extends AppCompatActivity {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
                 bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-                Intent intent = new Intent(ARActivity.this,PictureActivity.class);
+                Intent intent = new Intent(getActivity(),PictureActivity.class);
                 startActivity(intent);
             }
         };
         return picture;
+    }
+
+
+    public static ARActivity newInstance() {
+        ARActivity ARFragment = new ARActivity();
+        Bundle args = new Bundle();
+        ARFragment.setArguments(args);
+        return ARFragment;
     }
 }

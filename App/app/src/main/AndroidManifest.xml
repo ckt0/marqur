@@ -12,9 +12,6 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
-<!--    <uses-feature-->
-<!--        android:name="android.hardware.camera"-->
-<!--        android:required="false" />-->
 
 <!--    App-Level Settings -->
     <application
@@ -37,21 +34,16 @@
 <!--        Startup/Overall Activity -->
         <activity android:name="com.marqur.android.MainActivity"
 		    android:label="@string/title_activity_main">
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.MAIN" />-->
-<!--                <action android:name="android.intent.action.VIEW" />-->
-<!--               <category android:name="android.intent.category.LAUNCHER" />-->
-<!--            </intent-filter>-->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.VIEW" />
+               <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
 
         <!--        AR Activity -->
         <activity android:name="com.marqur.android.ARActivity"
             android:label="@string/title_activity_main" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
 
 <!--        SignUp Activity -->
@@ -70,15 +62,6 @@
         <activity android:name="com.marqur.android.AddMarker"
             android:label="@string/title_activity_map_add_marker" />
 
-<!--        <provider-->
-<!--            android:name="androidx.core.content.FileProvider"-->
-<!--            android:authorities="${applicationId}.fileprovider"-->
-<!--            android:exported="false"-->
-<!--            android:grantUriPermissions="true">-->
-<!--            <meta-data-->
-<!--                android:name="android.support.FILE_PROVIDER_PATHS"-->
-<!--                android:resource="@xml/file_paths" />-->
-<!--        </provider>-->
 
     </application>
 

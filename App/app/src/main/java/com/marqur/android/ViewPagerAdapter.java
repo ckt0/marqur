@@ -40,7 +40,7 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
             case 1:
                 return MapsActivity.newInstance();
             case 2:
-                return MapsActivity.newInstance();
+                return ARActivity.newInstance();
             default:
                 return null;
         }
