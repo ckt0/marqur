@@ -24,7 +24,7 @@ public class UploadListAdapter extends RecyclerView.Adapter<UploadListAdapter.Vi
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.recyclerview, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.image_upload_queue, parent, false);
         return new ViewHolder(view);
     }
 
