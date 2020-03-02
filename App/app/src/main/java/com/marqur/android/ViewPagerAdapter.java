@@ -6,7 +6,6 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.fragment.app.FragmentStatePagerAdapter;
 
 
 public class ViewPagerAdapter extends FragmentPagerAdapter {
@@ -26,21 +25,17 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
         return NUM_PAGES;
     }
 
-//    @Override
-//    public Fragment getItem(int position) {
-//        return new MapFragment();
-//    }
 
     // Returns the fragment to display for that page
     @Override
     public Fragment getItem(int position) {
         switch (position) {
             case 0:
-                return MapsActivity.newInstance();
-            case 1:
-                return MapsActivity.newInstance();
-            case 2:
                 return ARActivity.newInstance();
+            case 1:
+                return FeedActivity.newInstance();
+            case 2:
+                return MapsActivity.newInstance();
             default:
                 return null;
         }

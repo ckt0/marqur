@@ -1,12 +1,16 @@
 package com.marqur.android;
+
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,17 +20,25 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
+import static android.content.Context.SENSOR_SERVICE;
+
 public class ARActivity extends Fragment {
 
     private Camera mCamera;
     private ARCameraPreview mPreview;
     private Camera.PictureCallback mPicture;
-    private Button capture, switchCamera;
+    private Button ar_button1, ar_button2;
     private Context myContext;
     private LinearLayout cameraPreview;
     private boolean cameraFront = false;
     public static Bitmap bitmap;
 
+    private SensorManager sensorManager;
+    private final float[] accelerometerReading = new float[3];
+    private final float[] magnetometerReading = new float[3];
+    private final float[] rotationMatrix = new float[9];
+    private final float[] mOrientationAngles = new float[3];
+    private int direction = 0;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -50,29 +62,29 @@ public class ARActivity extends Fragment {
         mPreview = new ARCameraPreview(myContext, mCamera);
         cameraPreview.addView(mPreview);
 
-        capture = (Button) getView().findViewById(R.id.btnCam);
-        capture.setOnClickListener(new View.OnClickListener() {
+        ar_button1 = (Button) getView().findViewById(R.id.gyroVal);
+        ar_button1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mCamera.takePicture(null, null, mPicture);
+
             }
         });
 
-        switchCamera = (Button) getView().findViewById(R.id.btnSwitch);
-        switchCamera.setOnClickListener(new View.OnClickListener() {
+        ar_button2 = (Button) getView().findViewById(R.id.compVal);
+        ar_button2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //get the number of cameras
-                int camerasNumber = Camera.getNumberOfCameras();
-                if (camerasNumber > 1) {
-                    //release the old camera instance
-                    //switch camera, from the front and the back and vice versa
-
-                    releaseCamera();
-                    chooseCamera();
-                } else {
-
-                }
+//                //get the number of cameras
+//                int camerasNumber = Camera.getNumberOfCameras();
+//                if (camerasNumber > 1) {
+//                    //release the old camera instance
+//                    //switch camera, from the front and the back and vice versa
+//
+//                    releaseCamera();
+//                    chooseCamera();
+//                } else {
+//
+//                }
             }
         });
 
@@ -82,8 +94,14 @@ public class ARActivity extends Fragment {
 
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-//        mFrgAct = getActivity();
-//        mIntent = mFrgAct.getIntent(); //  Intent intent = new Intent(getActivity().getIntent());
+        startSensors();
+    }
+
+    public static ARActivity newInstance() {
+        ARActivity ARFragment = new ARActivity();
+        Bundle args = new Bundle();
+        ARFragment.setArguments(args);
+        return ARFragment;
     }
 
 //    @Override
@@ -204,10 +222,71 @@ public class ARActivity extends Fragment {
     }
 
 
-    public static ARActivity newInstance() {
-        ARActivity ARFragment = new ARActivity();
-        Bundle args = new Bundle();
-        ARFragment.setArguments(args);
-        return ARFragment;
+
+    public void startSensors() {
+
+        sensorManager = (SensorManager) getActivity().getSystemService(SENSOR_SERVICE);
+
+        Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        SensorEventListener accelerometerSensorListener = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent sensorEvent) {
+                System.arraycopy(sensorEvent.values, 0, accelerometerReading,
+                        0, accelerometerReading.length);
+                updateOrientationAngles();
+                if(mOrientationAngles[1]<-0.9) {
+                    ar_button1.setText("Valid");
+                } else {
+                    ar_button1.setText("Invalid");
+                }
+//                ar_button1.setText(String.format("%f",sensorEvent.values[2]));
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int i) {
+            }
+        };
+        if (accelerometer != null) {
+            sensorManager.registerListener(accelerometerSensorListener,
+                    accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+
+        Sensor magneticField = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        SensorEventListener magneticSensorListener = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent sensorEvent) {
+                System.arraycopy(sensorEvent.values, 0, magnetometerReading,
+                        0, magnetometerReading.length);
+                updateOrientationAngles();
+                ar_button2.setText(String.format("%d",direction));
+//                ar_button2.setText(String.format("%f",mOrientationAngles[1]));
+//                ar_button2.setText(String.format("%f",sensorEvent.values[2]));
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int i) {
+            }
+        };
+        if (magneticField != null) {
+            sensorManager.registerListener(magneticSensorListener,
+                    magneticField, SensorManager.SENSOR_DELAY_NORMAL);
+        }
     }
+
+    // Compute the three orientation angles based on the most recent readings from
+    // the device's accelerometer and magnetometer.
+    public void updateOrientationAngles() {
+
+        // Update rotation matrix, which is needed to update orientation angles.
+        SensorManager.getRotationMatrix(rotationMatrix, null,
+                accelerometerReading, magnetometerReading);
+        // "rotationMatrix" now has up-to-date information.
+
+        SensorManager.getOrientation(rotationMatrix, mOrientationAngles);
+        // "mOrientationAngles" now has up-to-date information.
+
+        direction = (int) Math.round(Math.toDegrees(mOrientationAngles[0]));
+
+    }
+
 }

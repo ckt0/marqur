@@ -26,7 +26,9 @@ public class MainActivity extends FragmentActivity {
         navBar = findViewById(R.id.navBar);
         pagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(pagerAdapter);
+        viewPager.setCurrentItem(1);
         viewPager.setPageTransformer(true, new ZoomOutPageTransformer());
+        viewPager.setOffscreenPageLimit(2);
         navBar.setupWithViewPager(viewPager);
 //        new TabLayoutMediator(navBar, viewPager, (tab, position) -> tab.setText("Tab " + (position + 1))).attach();
 
