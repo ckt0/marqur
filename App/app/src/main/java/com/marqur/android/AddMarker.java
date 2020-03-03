@@ -3,6 +3,7 @@ package com.marqur.android;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
 import android.util.Log;
@@ -10,31 +11,26 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.firebase.geofire.GeoFire;
-import com.firebase.geofire.GeoLocation;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
-import com.google.type.LatLng;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.UUID;
+import java.util.Objects;
 
 public class AddMarker extends AppCompatActivity {
     private static final String TAG = "addmarker";
@@ -42,21 +38,22 @@ public class AddMarker extends AppCompatActivity {
     private RecyclerView muploadlistview;
     private Button btnChoose;
     private EditText tTitle;
-    private String uniqueID = UUID.randomUUID().toString();
+
     private Marker marker;
     private List<String> filenameList;
     private List<String> filedonelist;
-    private LatLng location;
+
+    FirebaseFirestore firestore ;
     private EditText tContent;
     private String date_created;
     private List<Uri> phnuri = new ArrayList<>();
     private Button btnDone;
     private String date_modified;
+    private String markerid;
     private Content icontent;
     private List<Media> Mmedia = new ArrayList<>();
     private Media media;
-    // Geofire
-    private GeoFire coordinates;
+
     private int totalitemselected = 0;
     private Boolean containsimage = false;
     private UploadListAdapter uploadListAdapter;
@@ -68,10 +65,9 @@ public class AddMarker extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
     //database reference
-    private DatabaseReference mDatabase;
-    private DatabaseReference mgeofireref;
     private Double latitude;
     private Double longitude;
+    private GeoPoint location;
 
 
     @Override
@@ -85,18 +81,18 @@ public class AddMarker extends AppCompatActivity {
 
 
         uploadListAdapter = new UploadListAdapter(filenameList, filedonelist);
-        btnChoose = (Button) findViewById(R.id.button_choose);
-        muploadlistview = (RecyclerView) findViewById(R.id.upload_queue);
-        btnDone = (Button) findViewById(R.id.button_done);
-        tTitle = (EditText) findViewById(R.id.edit_title);
-        tContent = (EditText) findViewById(R.id.edit_content);
+        btnChoose = findViewById(R.id.button_choose);
+        muploadlistview = findViewById(R.id.upload_queue);
+        btnDone = findViewById(R.id.button_done);
+        tTitle = findViewById(R.id.edit_title);
+        tContent = findViewById(R.id.edit_content);
         date_modified = date_created = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
         //firebase reference initialise
+        firestore = FirebaseFirestore.getInstance();
         firebaseStorage = FirebaseStorage.getInstance();
         firebaseAuth = FirebaseAuth.getInstance();
         storageReference = firebaseStorage.getReference();
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        mgeofireref=mDatabase.child("Marker").child(uniqueID);
+
         user = firebaseAuth.getCurrentUser();
 
 
@@ -120,6 +116,7 @@ public class AddMarker extends AppCompatActivity {
 
         //Upload marker to firebase
         btnDone.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onClick(View view) {
                 if (containsimage) {
@@ -129,20 +126,11 @@ public class AddMarker extends AppCompatActivity {
                 } else {
                     noimage();
                 }
-                coordinates=new GeoFire(mgeofireref);
-                coordinates.setLocation("location", new GeoLocation(latitude, longitude), new GeoFire.CompletionListener() {
-                    @Override
-                    public void onComplete(String key, DatabaseError error) {
-                        if (error != null) {
-                            System.err.println("There was an error saving the location to GeoFire: " + error);
-                        } else {
-                            System.out.println("Location saved on server successfully!");
-                        }
-                    }
 
 
-                });
             }
+
+
 
         });
 
@@ -154,7 +142,7 @@ public class AddMarker extends AppCompatActivity {
 
         latitude = i.getDoubleExtra("latitude", 0);
         longitude = i.getDoubleExtra("longitude", 0);
-
+        location=new GeoPoint(latitude,longitude);
 
     }
 
@@ -200,6 +188,7 @@ public class AddMarker extends AppCompatActivity {
     }
 
     //upload
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void uploadImage(Uri fileuri) {
         String filename = getFileName(fileuri);
         if (fileuri != null) {
@@ -207,55 +196,45 @@ public class AddMarker extends AppCompatActivity {
             StorageReference fileupload = storageReference.child("images").child(filename);
 
 
-            fileupload.putFile(fileuri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    fileupload.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                        @Override
-                        public void onSuccess(Uri uri) {
-                            for (int i = 0; i < totalitemselected; i++) {
-                                filedonelist.remove(i);
-                                filedonelist.add(i, "done");
-                            }
-                            count++;
-                            uploadListAdapter.notifyDataSetChanged();
-                            String downloadUrl = uri.toString();
-                            media = new Media(downloadUrl, filename);
-                            Mmedia.add(media);
-                            if (count == totalitemselected) {
-
-
-                                icontent = new Content(tTitle.getText().toString().trim(), tContent.getText().toString(), Mmedia);
-                                marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(), date_created, date_modified, 0, 0, 0, 0, 0, icontent);
-                                mDatabase.child("Marker").child(uniqueID).setValue(marker);
-                                ;
-                                mDatabase.child("users").child(user.getUid()).child("location").setValue(location);
-                                mDatabase.child("users").child(user.getUid()).child("markers").child(uniqueID).setValue("");
-
-                                finish();
-                            }
-                            //Do what you want with the url
+            fileupload.putFile(fileuri).addOnSuccessListener(taskSnapshot -> {
+                fileupload.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        for (int i = 0; i < totalitemselected; i++) {
+                            filedonelist.remove(i);
+                            filedonelist.add(i, "done");
                         }
+                        count++;
+                        uploadListAdapter.notifyDataSetChanged();
+                        String downloadUrl = uri.toString();
+                        media = new Media(downloadUrl, filename);
+                        Mmedia.add(media);
+                        if (count == totalitemselected) {
 
-                    });
 
-                }
+                            icontent = new Content(tTitle.getText().toString().trim(), tContent.getText().toString(), Mmedia);
+                            marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(), location, date_created, date_modified, 0, 0, 0, 0, 0);
+                            entertodb();
 
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception exception) {
-                    Log.e(TAG, "yeeeeeee" + exception.toString());
-                    // Handle unsuccessful uploads
-                }
+
+                        }
+                        //Do what you want with the url
+                    }
+
+                });
+            }).addOnFailureListener(exception -> {
+                Log.e(TAG, "yeeeeeee" + exception.toString());
+                // Handle unsuccessful uploads
             });
         }
 
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public String getFileName(Uri uri) {
         String result = null;
-        if (uri.getScheme().equals("content")) {
+        if (Objects.equals(uri.getScheme(), "content")) {
             Cursor cursor = getContentResolver().query(uri, null, null, null, null);
             try {
                 if (cursor != null && cursor.moveToFirst()) {
@@ -279,13 +258,25 @@ public class AddMarker extends AppCompatActivity {
 
 
         icontent = new Content(tTitle.getText().toString().trim(), tContent.getText().toString(), null);
-        marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(), date_created, date_modified, 0, 0, 0, 0, 0, icontent);
-        mDatabase.child("Marker").child(uniqueID).setValue(marker);
+        marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(),location, date_created, date_modified, 0, 0, 0, 0, 0);
+        entertodb();
 
-        mDatabase.child("users").child(user.getUid()).child("location").setValue(location);
-        mDatabase.child("users").child(user.getUid()).child("markers").child(uniqueID).setValue("");
+
+    }
+    private void entertodb(){
+        firestore.collection("Marker")
+                .add(marker)
+                .addOnSuccessListener(documentReference -> {
+                    Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
+                    markerid=documentReference.getId();
+                    firestore.collection("Marker").document(markerid).collection("Content").add(icontent);
+                    firestore.collection("Users").document(user.getUid()).update("markers", FieldValue.arrayUnion(markerid)).addOnFailureListener(e -> Log.w(TAG, "Error adding document", e));
+                })
+                .addOnFailureListener(e -> Log.w(TAG, "Error adding document", e));
+
 
         finish();
+
     }
 
 }

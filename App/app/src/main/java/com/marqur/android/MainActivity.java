@@ -1,4 +1,5 @@
 package com.marqur.android;
+
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -19,7 +20,7 @@ public class MainActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Intent intent = new Intent(this, LoginActivity.class);
+        Intent intent = new Intent(this, SignupActivity.class);
         startActivity(intent);
         setContentView(R.layout.activity_viewpager);
         viewPager = findViewById(R.id.view_pager);

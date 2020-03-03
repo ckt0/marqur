@@ -10,15 +10,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -31,7 +25,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     //firebase auth object
     private FirebaseAuth firebaseAuth;
-    private DatabaseReference mDatabase;
+
 
     //progress dialog
     private ProgressDialog progressDialog;
@@ -40,26 +34,27 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         overridePendingTransition(R.anim.fadein, R.anim.fadeout);
+        if (firebaseAuth.getCurrentUser() != null) {
+            //close this activity
+            finish();
+
+        }
+
         setContentView(R.layout.activity_login);
 
 
         //getting firebase auth object
-        firebaseAuth = FirebaseAuth.getInstance();
-        mDatabase = FirebaseDatabase.getInstance().getReference();
+
+
         //if the objects getcurrentuser method is not null
         //means user is already logged in
-        if (firebaseAuth.getCurrentUser() != null) {
-            //close this activity
-            finish();
-            //opening profile activity
-//            startActivity(new Intent(getApplicationContext(), MapsActivity.class));
-        }
+
 
         //initializing views
-        editTextEmail = (EditText) findViewById(R.id.editTextEmail);
-        editTextPassword = (EditText) findViewById(R.id.editTextPassword);
-        buttonSignIn = (Button) findViewById(R.id.buttonSignin);
-        textViewSignup = (TextView) findViewById(R.id.textViewSignUp);
+        editTextEmail = findViewById(R.id.editTextEmail);
+        editTextPassword = findViewById(R.id.editTextPassword);
+        buttonSignIn = findViewById(R.id.buttonSignin);
+        textViewSignup = findViewById(R.id.textViewSignUp);
 
         progressDialog = new ProgressDialog(this);
 
@@ -93,21 +88,18 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         //logging in the user
         firebaseAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        progressDialog.dismiss();
-                        //if the task is successfull
-                        if (task.isSuccessful()) {
-                            //start the profile activity
-                            finish();
+                .addOnCompleteListener(this, task -> {
+                    progressDialog.dismiss();
+                    //if the task is successfull
+                    if (task.isSuccessful()) {
+                        //start the profile activity
+                        finish();
 
 //                            startActivity(new Intent(getApplicationContext(), MapsActivity.class));
-                        }
-                        else {
-                            //display some message here
-                            Toast.makeText(LoginActivity.this, "Login Error", Toast.LENGTH_LONG).show();
-                        }
+                    }
+                    else {
+                        //display some message here
+                        Toast.makeText(LoginActivity.this, "Login Error", Toast.LENGTH_LONG).show();
                     }
                 });
 

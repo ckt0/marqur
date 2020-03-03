@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -14,13 +15,13 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -38,11 +39,12 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
     private Button buttonSignup;
     private TextView textViewSignin;
     private ProgressDialog progressDialog;
-    private Users P_user;
+    private Users p_user;
     //defining firebaseauth object
     private FirebaseAuth firebaseAuth;
     //database reference
-    private DatabaseReference mDatabase;
+    // Access a Cloud Firestore instance from your Activity
+    FirebaseFirestore firestore ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,15 +54,16 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
 
         //initializing firebase auth object
         firebaseAuth = FirebaseAuth.getInstance();
-        mDatabase = FirebaseDatabase.getInstance().getReference();
+        firestore = FirebaseFirestore.getInstance();
+
 
 
         //initializing views
-        editTextUsername = (EditText) findViewById(R.id.username);
-        editTextEmail = (EditText) findViewById(R.id.editTextEmail);
-        editTextPassword = (EditText) findViewById(R.id.editTextPassword);
-        textViewSignin = (TextView) findViewById(R.id.textViewSignin);
-        buttonSignup = (Button) findViewById(R.id.buttonSignup);
+        editTextUsername = findViewById(R.id.username);
+        editTextEmail = findViewById(R.id.editTextEmail);
+        editTextPassword = findViewById(R.id.editTextPassword);
+        textViewSignin = findViewById(R.id.textViewSignin);
+        buttonSignup = findViewById(R.id.buttonSignup);
 
         progressDialog = new ProgressDialog(this);
 
@@ -117,10 +120,18 @@ public class SignupActivity extends AppCompatActivity implements View.OnClickLis
                             user.updateProfile(profileUpdates);
 
                             String date = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
-                            Users p_user = new Users(user.getUid(), editTextUsername.getText().toString().trim(), email, date, 0, 0, null, null);
-                            mDatabase.child("users").child(user.getUid()).setValue(p_user);
+                            p_user = new Users(user.getUid(), editTextUsername.getText().toString().trim(), email, date, 0, 0, null, null);
+                            // Add a new document with a generated ID
+                            firestore.collection("Users").document(user.getUid())
+                                    .set(p_user).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Log.e(TAG,"Error while creating user");
+                                }
+                            });
+
                             finish();
-//                            startActivity(new Intent(getApplicationContext(), MapsActivity.class));
+
                         } else {
                             //display some message here
                             Toast.makeText(SignupActivity.this, "Sign-up Error", Toast.LENGTH_LONG).show();
