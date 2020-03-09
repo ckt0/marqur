@@ -25,6 +25,8 @@ import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import org.imperiumlabs.geofirestore.GeoFirestore;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -32,7 +34,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+
+
+
 public class AddMarker extends AppCompatActivity {
+
     private static final String TAG = "addmarker";
     private final int PICK_IMAGE_REQUEST = 71;
     private RecyclerView muploadlistview;
@@ -49,7 +55,7 @@ public class AddMarker extends AppCompatActivity {
     private List<Uri> phnuri = new ArrayList<>();
     private Button btnDone;
     private String date_modified;
-    private String markerid;
+    private String markerId;
     private Content icontent;
     private List<Media> Mmedia = new ArrayList<>();
     private Media media;
@@ -64,6 +70,7 @@ public class AddMarker extends AppCompatActivity {
     private StorageReference storageReference;
     private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
+
     //database reference
     private Double latitude;
     private Double longitude;
@@ -74,7 +81,7 @@ public class AddMarker extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         overridePendingTransition(R.anim.fadein, R.anim.fadeout);
-        setContentView(R.layout.activity_addmarker);
+        setContentView(R.layout.activity_create_marker);
         //Initialize Views and get current date
         filenameList = new ArrayList<>();
         filedonelist = new ArrayList<>();
@@ -213,7 +220,7 @@ public class AddMarker extends AppCompatActivity {
 
 
                             icontent = new Content(tTitle.getText().toString().trim(), tContent.getText().toString(), Mmedia);
-                            marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(), location, date_created, date_modified, 0, 0, 0, 0, 0);
+                            marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(), null, date_created, date_modified, 0, 0, 0, 0, 0);
                             entertodb();
 
 
@@ -258,19 +265,23 @@ public class AddMarker extends AppCompatActivity {
 
 
         icontent = new Content(tTitle.getText().toString().trim(), tContent.getText().toString(), null);
-        marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(),location, date_created, date_modified, 0, 0, 0, 0, 0);
+        marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(),null, date_created, date_modified, 0, 0, 0, 0, 0);
         entertodb();
 
 
     }
     private void entertodb(){
-        firestore.collection("Marker")
+        firestore.collection("markers")
                 .add(marker)
                 .addOnSuccessListener(documentReference -> {
                     Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
-                    markerid=documentReference.getId();
-                    firestore.collection("Marker").document(markerid).collection("Content").add(icontent);
-                    firestore.collection("Users").document(user.getUid()).update("markers", FieldValue.arrayUnion(markerid)).addOnFailureListener(e -> Log.w(TAG, "Error adding document", e));
+                    markerId =documentReference.getId();
+
+                    GeoFirestore geoFirestore = new GeoFirestore( firestore.collection("marker") );
+                    geoFirestore.setLocation(markerId, location);
+
+                    firestore.collection("markers").document(markerId).collection("Content").add(icontent);
+                    firestore.collection("users").document(user.getUid()).update("markers", FieldValue.arrayUnion(markerId)).addOnFailureListener(e -> Log.w(TAG, "Error adding document", e));
                 })
                 .addOnFailureListener(e -> Log.w(TAG, "Error adding document", e));
 

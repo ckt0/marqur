@@ -2,8 +2,8 @@ package com.marqur.android;
 
 import com.google.firebase.firestore.GeoPoint;
 
-public class Marker {
 
+public class Marker {
 
     public String title;
     public String author;
@@ -37,4 +37,6 @@ public class Marker {
         this.reports = reports;
 
     }
+
+
 }

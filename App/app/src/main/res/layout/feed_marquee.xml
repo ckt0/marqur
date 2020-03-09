@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:id="@+id/feed_marquee"
+    android:text="\@ Amal Jyothi College of Engineering, Kanjirapally"
+    android:singleLine="true"
+    android:ellipsize="marquee"
+    android:marqueeRepeatLimit="marquee_forever"
+    android:scrollHorizontally="true"
+    android:paddingLeft="15dip"
+    android:paddingRight="15dip"
+    android:paddingBottom="5dip"
+    android:paddingTop="5dip"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:freezesText="false"
+    android:textSize="15sp"
+    android:background="@color/colorMarquee"
+    android:textColor="@color/quantum_white_100">
+</TextView>

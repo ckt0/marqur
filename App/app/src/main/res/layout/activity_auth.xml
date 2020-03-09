@@ -4,14 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
-
-    <androidx.viewpager.widget.ViewPager
-        android:id="@+id/view_pager"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="0dp"
-        android:layout_weight="20" />
+    android:orientation="vertical"
+    android:fitsSystemWindows="true">
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/navBar"
@@ -20,7 +14,18 @@
         android:layout_marginBottom="1dp"
         android:layout_weight="1"
         app:tabGravity="fill"
-        app:tabIndicatorColor="@color/green_300"
-        app:tabMode="fixed"/>
+        app:tabIndicatorColor="@color/colorAccent"
+        app:tabIndicatorHeight="5dp"
+        app:tabIndicatorGravity="bottom"
+        app:tabMode="fixed"
+        app:tabBackground="@color/colorPrimary"
+        app:tabTextColor="@color/quantum_white_100"/>
+
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/view_pager"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="0dp"
+        android:layout_weight="20" />
 
 </LinearLayout>

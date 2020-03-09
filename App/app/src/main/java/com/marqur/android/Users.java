@@ -12,7 +12,6 @@ public class Users {
     public List<Double> location;
     public List<String> markers;
 
-
     public Users() {
 
     }

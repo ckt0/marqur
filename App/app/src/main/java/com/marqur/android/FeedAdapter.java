@@ -1,59 +1,49 @@
 package com.marqur.android;
 
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 
 import org.jetbrains.annotations.NotNull;
 
-public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.MyViewHolder> {
+public class FeedAdapter extends FirestoreRecyclerAdapter<Marker, FeedAdapter.MarkerFeedHolder> {
     private String[] mDataset;
 
-    // Provide a reference to the views for each data item
-    // Complex data items may need more than one view per item, and
-    // you provide access to all the views for a data item in a view holder
-    static class MyViewHolder extends RecyclerView.ViewHolder {
-        // each data item is just a string in this case
-        TextView textView;
 
-        MyViewHolder(TextView v) {
-            super(v);
-            textView = v;
+    public FeedAdapter(@NonNull FirestoreRecyclerOptions<Marker> options) {
+        super(options);
+    }
+
+    @Override
+    protected void onBindViewHolder(@NonNull MarkerFeedHolder holder, int position, @NonNull Marker model) {
+        holder.textViewTitle.setText(model.title);
+        holder.textViewContent.setText(model.author);
+    }
+
+    @NonNull
+    @Override
+    public MarkerFeedHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.feed_list_item,
+                parent, false);
+        return new MarkerFeedHolder(v);
+    }
+
+    class MarkerFeedHolder extends RecyclerView.ViewHolder {
+        TextView textViewTitle;
+        TextView textViewContent;
+
+        public MarkerFeedHolder(View itemView) {
+            super(itemView);
+            textViewTitle = itemView.findViewById(R.id.feed_item_title);
+            textViewContent = itemView.findViewById(R.id.feed_item_content);
         }
-    }
-
-    // Provide a suitable constructor (depends on the kind of dataset)
-    public FeedAdapter(String[] myDataset) {
-        mDataset = myDataset;
-    }
-
-    // Create new views (invoked by the layout manager)
-    @NotNull
-    @Override
-    public FeedAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent,
-                                                     int viewType) {
-        // create a new view
-        TextView v = (TextView) LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.feed_list_item, parent, false);
-
-        MyViewHolder vh = new MyViewHolder(v);
-        return vh;
-    }
-
-    // Replace the contents of a view (invoked by the layout manager)
-    @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
-        // - get element from your dataset at this position
-        // - replace the contents of the view with that element
-        holder.textView.setText(mDataset[position]);
-
-    }
-
-    // Return the size of your dataset (invoked by the layout manager)
-    @Override
-    public int getItemCount() {
-        return mDataset.length;
     }
 }

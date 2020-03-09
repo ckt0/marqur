@@ -24,7 +24,7 @@ public class UploadListAdapter extends RecyclerView.Adapter<UploadListAdapter.Vi
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.image_upload_queue, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.media_upload_queue, parent, false);
         return new ViewHolder(view);
     }
 
@@ -36,7 +36,7 @@ public class UploadListAdapter extends RecyclerView.Adapter<UploadListAdapter.Vi
         if (fileDone.equals("Uploading")) {
             holder.fileDoneView.setImageResource(R.drawable.progress);
         } else {
-            holder.fileDoneView.setImageResource(R.drawable.done);
+            holder.fileDoneView.setImageResource(R.drawable.ic_done_all_green_24dp);
         }
     }
 

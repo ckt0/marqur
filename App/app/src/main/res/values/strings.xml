@@ -1,9 +1,9 @@
 <resources>
-    <string name="app_name">Marqur</string>
+    <string name="app_name">marqur</string>
 
     <string name="title_activity_map_view">Map</string>
     <string name="title_activity_map_add_marker">Add Marker</string>
-    <string name="title_activity_main">Marqur</string>
+    <string name="title_activity_main">marqur</string>
     <string name="title_activity_login">Login</string>
     <string name="title_activity_signup">Sign Up</string>
     <string name="title">Title</string>
