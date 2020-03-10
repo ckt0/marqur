@@ -10,27 +10,23 @@
 
 package com.marqur.android;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -43,20 +39,14 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
-import com.google.android.libraries.places.api.model.Place;
-import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
-import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
-import java.util.Objects;
-
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 
-public class MapFragment extends Fragment implements OnMapReadyCallback,View.OnClickListener {
+public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     private static final int DEFAULT_ZOOM = 20;
     private static final String TAG = "Marqur Map Fragment";
@@ -67,6 +57,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,View.OnC
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private Location mLastKnownLocation;
     private boolean isSwipeEnabled = false;
+    private boolean count=true;
+    private FloatingActionButton fab;
+    private CardView cardView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -103,8 +96,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,View.OnC
         //initialise fused location
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
         //Initialise FAB
-        FloatingActionButton fab = getView().findViewById(R.id.search_fab);
-
+        fab = getView().findViewById(R.id.search_fab);
+        cardView=getView().findViewById(R.id.roam_actions);
 
         // Initialize the SDK
         Places.initialize(getActivity(), getString(R.string.google_maps_key));
@@ -159,15 +152,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,View.OnC
         return mapFragment;
     }
 
-    @Override
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.roam_view:
-                isSwipeEnabled=!isSwipeEnabled;
-                mMap.getUiSettings().setScrollGesturesEnabled(isSwipeEnabled);
-                break;
-        }
-    }
+
+
 
 
     @Override
@@ -182,7 +168,24 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,View.OnC
             }
         });
 
-
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                if(count) {
+                    isSwipeEnabled = true;
+                    count=false;
+                    cardView.setVisibility(View.GONE);
+                    fab.setVisibility(View.GONE);
+                }
+                else{
+                    isSwipeEnabled=false;
+                    count=true;
+                    cardView.setVisibility(View.VISIBLE);
+                    fab.setVisibility(View.GONE);
+                }
+                mMap.getUiSettings().setScrollGesturesEnabled(isSwipeEnabled);
+            }
+        });
 
         //removing the POI and Transits
         try {

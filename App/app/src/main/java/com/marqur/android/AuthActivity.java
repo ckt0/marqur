@@ -2,8 +2,9 @@ package com.marqur.android;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
@@ -13,25 +14,12 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.tabs.TabLayout;
-
-import android.util.Log;
-import android.view.View;
-import android.widget.Toast;
-
 import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 /**
  * Authentication activity that registers/signs-in user
@@ -125,36 +113,6 @@ public class AuthActivity extends AppCompatActivity {
                             // Initialise user variable with logged-in user
                             FirebaseUser user = firebaseAuth.getCurrentUser();
                             assert user != null;
-
-//                            // Set entered username as user's display name
-//                            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-//                                    .setDisplayName(username).build();
-//                            user.updateProfile(profileUpdates);
-//
-//                            // Get current date
-//                            String date = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
-//
-//                            // Create a new Users entry for our Firestore database
-//                            Users p_user = new Users(user.getUid(),
-//                                    username,
-//                                    email,
-//                                    date,
-//                                    0,
-//                                    0,
-//                                    null,
-//                                    null);
-//
-//                            // Initialize Firestore object
-//                            FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-//
-//                            // Add user as new document entry under Users with a generated ID
-//                            firestore.collection("Users").document(user.getUid())
-//                                    .set(p_user).addOnFailureListener( e -> {
-//                                        // If document addition fails... TO-DO
-//                                        Log.e(TAG,"Error while creating user"+e.getMessage());
-//                            });
-
-                            // Exit activity
                             Intent intent = getIntent();
                             intent.putExtra("user", user);
                             setResult(RESULT_OK, intent);

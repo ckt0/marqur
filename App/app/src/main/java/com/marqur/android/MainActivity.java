@@ -8,16 +8,13 @@ import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.viewpager.widget.ViewPager;
@@ -428,10 +425,14 @@ public class MainActivity extends AppCompatActivity {
         } else if (id == R.id.action_search) {
             return true;
         } else if (id == R.id.action_login) {
+            hideOption(R.id.action_login);
+            showOption(R.id.action_logout);
             Intent intent = new Intent(MainActivity.this, AuthActivity.class);
             startActivityForResult(intent,AUTH_REQUEST_CODE);
             return true;
         } else if (id == R.id.action_logout) {
+            hideOption(R.id.action_logout);
+            showOption(R.id.action_login);
             FirebaseAuth.getInstance().signOut();
             Intent intent = new Intent(MainActivity.this, AuthActivity.class);
             startActivityForResult(intent,AUTH_REQUEST_CODE);
