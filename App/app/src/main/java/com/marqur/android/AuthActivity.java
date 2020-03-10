@@ -3,6 +3,8 @@ package com.marqur.android;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,7 +31,7 @@ public class AuthActivity extends AppCompatActivity {
     private PagerAdapter pagerAdapter;
     private TabLayout navBar;
     private ViewPager viewPager;
-
+    private ProgressBar progressBar;
     private static final String TAG = "Authentication";
 
     FirebaseAuth firebaseAuth;
@@ -64,7 +66,7 @@ public class AuthActivity extends AppCompatActivity {
         // Fetch view elements
         viewPager = findViewById(R.id.view_pager);
         navBar = findViewById(R.id.navBar);
-
+        progressBar=findViewById(R.id.progressBar);
         // Create and attach ViewPager adapter using the FragmentManager that came with this Activity
         pagerAdapter = new AuthViewPager(getSupportFragmentManager());
         viewPager.setAdapter(pagerAdapter);
@@ -104,6 +106,9 @@ public class AuthActivity extends AppCompatActivity {
     public void registerUser(String email, String password, String username) {
 
         // Create a new user and run listener after completion
+        progressBar.setVisibility(View.VISIBLE);
+        navBar.setVisibility(View.GONE);
+        viewPager.setVisibility(View.GONE);
         firebaseAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
 
@@ -113,6 +118,7 @@ public class AuthActivity extends AppCompatActivity {
                             // Initialise user variable with logged-in user
                             FirebaseUser user = firebaseAuth.getCurrentUser();
                             assert user != null;
+                            progressBar.setVisibility(View.GONE);
                             Intent intent = getIntent();
                             intent.putExtra("user", user);
                             setResult(RESULT_OK, intent);
@@ -122,6 +128,9 @@ public class AuthActivity extends AppCompatActivity {
                             // If sign-up fails, alert user with Toast
                             Toast.makeText(AuthActivity.this,
                                     "Registration Failed, Please retry...", Toast.LENGTH_LONG).show();
+                            progressBar.setVisibility(View.GONE);
+                            navBar.setVisibility(View.VISIBLE);
+                            viewPager.setVisibility(View.VISIBLE);
                         }
 
                 });
@@ -134,16 +143,23 @@ public class AuthActivity extends AppCompatActivity {
     public void loginUser(String email, String password) {
 
         // Log-in user and run listener after completion
+        progressBar.setVisibility(View.VISIBLE);
+        navBar.setVisibility(View.GONE);
+        viewPager.setVisibility(View.GONE);
         firebaseAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
 
                     // If sign-in was successful, exit activity
                     if (task.isSuccessful()) {
+                        progressBar.setVisibility(View.GONE);
                         Intent intent = getIntent();
                         intent.putExtra("user", firebaseAuth.getCurrentUser());
                         setResult(RESULT_OK, intent);
                         finish();
                     } else {
+                        progressBar.setVisibility(View.GONE);
+                        navBar.setVisibility(View.VISIBLE);
+                        viewPager.setVisibility(View.VISIBLE);
                         // Sign-In failed, alert user
                         Toast.makeText(this, "Login Failed! Please retry...", Toast.LENGTH_LONG).show();
                     }
@@ -173,12 +189,16 @@ public class AuthActivity extends AppCompatActivity {
         AuthCredential credential = GoogleAuthProvider.getCredential(googleSignInAccount.getIdToken(), null);
 
         //Now using firebase we are signing in the user here
+        progressBar.setVisibility(View.VISIBLE);
+        navBar.setVisibility(View.GONE);
+        viewPager.setVisibility(View.GONE);
         firebaseAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, task -> {
 
                     if (task.isSuccessful()) {
 
                         // #justdebugthings
+
                         Log.d(TAG, "signInWithCredential:success");
 
                         // Authentication successful, alert user
@@ -186,6 +206,7 @@ public class AuthActivity extends AppCompatActivity {
 
                         // Exit activity
                         if(firebaseAuth.getCurrentUser() != null) {
+                            progressBar.setVisibility(View.GONE);
                             Intent intent = getIntent();
                             intent.putExtra("user", firebaseAuth.getCurrentUser());
                             setResult(RESULT_OK, intent);
@@ -196,7 +217,9 @@ public class AuthActivity extends AppCompatActivity {
 
                         // #justdebugthings
                         Log.w(TAG, "signInWithCredential:failure", task.getException());
-
+                        progressBar.setVisibility(View.GONE);
+                        navBar.setVisibility(View.VISIBLE);
+                        viewPager.setVisibility(View.VISIBLE);
                         // Authentication failed, alert user
                         Toast.makeText(getApplicationContext(), "Google Sign-In Failed!",
                                 Toast.LENGTH_SHORT).show();
