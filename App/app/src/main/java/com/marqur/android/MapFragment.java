@@ -40,13 +40,23 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
+import com.google.maps.android.clustering.ClusterManager;
 
+import org.imperiumlabs.geofirestore.GeoFirestore;
+import org.imperiumlabs.geofirestore.GeoQuery;
+import org.imperiumlabs.geofirestore.listeners.GeoQueryEventListener;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 
 public class MapFragment extends Fragment implements OnMapReadyCallback {
+
 
     private static final int DEFAULT_ZOOM = 20;
     private static final String TAG = "Marqur Map Fragment";
@@ -58,8 +68,18 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private Location mLastKnownLocation;
     private boolean isSwipeEnabled = false;
     private boolean count=true;
+    private boolean Obtainedall=false;
     private FloatingActionButton fab;
     private CardView cardView;
+    private LatLng mapcoord;
+    private FirebaseFirestore firestore ;
+    private GeoQuery geoquery;
+    private GeoFirestore geoFirestore;
+    List<MarkerCluster> items=new ArrayList<>();
+
+
+
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -78,6 +98,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment)this.getChildFragmentManager()
                 .findFragmentById(R.id.map);
+
+        //Initialise firestore
+        firestore = FirebaseFirestore.getInstance();
+        geoFirestore = new GeoFirestore( firestore.collection("marker") );
 
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
@@ -131,7 +155,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                LatLng mapcoord;
+
                 mapcoord = mMap.getCameraPosition().target;
 
                 startActivity(new Intent(getActivity().getApplicationContext(), AddMarker.class).putExtra("latitude", mapcoord.latitude).putExtra("longitude", mapcoord.longitude));
@@ -158,7 +182,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+
         mMap = googleMap;
+
         mMap.getUiSettings().setScrollGesturesEnabled(isSwipeEnabled);
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
@@ -181,7 +207,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                     isSwipeEnabled=false;
                     count=true;
                     cardView.setVisibility(View.VISIBLE);
-                    fab.setVisibility(View.GONE);
+                    fab.setVisibility(View.VISIBLE);
                 }
                 mMap.getUiSettings().setScrollGesturesEnabled(isSwipeEnabled);
             }
@@ -214,7 +240,90 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
 
         //TODO display markers that are around the current location
+    mMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
+        @Override
+        public void onCameraMove() {
+            mapcoord = mMap.getCameraPosition().target;
+            geoquery=geoFirestore.queryAtLocation(new GeoPoint(mapcoord.latitude,mapcoord.longitude),5);
+            geoquery.addGeoQueryEventListener(new GeoQueryEventListener() {
+                MarkerCluster markers;
+                @Override
+                public void onKeyEntered(@NotNull String s, @NotNull GeoPoint geoPoint) {
 
+
+
+                }
+
+                @Override
+                public void onKeyExited(@NotNull String s) {
+
+                }
+
+                @Override
+                public void onKeyMoved(@NotNull String s, @NotNull GeoPoint geoPoint) {
+                    markers=new MarkerCluster("Marker",new LatLng(geoPoint.getLatitude(),geoPoint.getLongitude()));
+                    items.add(markers);
+                }
+
+                @Override
+                public void onGeoQueryReady() {
+                    ClusterManager<MarkerCluster> clusterManager = new ClusterManager<MarkerCluster>(getActivity().getApplicationContext(), googleMap);
+                    clusterManager.setRenderer(new MarkerClusterRenderer(getActivity(), googleMap, clusterManager));
+                    googleMap.setOnCameraIdleListener(clusterManager);
+                    clusterManager.addItems(items);  // 4
+                    clusterManager.cluster();
+                }
+
+                @Override
+                public void onGeoQueryError(@NotNull Exception e) {
+
+                }
+            });
+
+        }
+    });
+
+    }
+
+
+
+    private void setUpClusterManager(GoogleMap googleMap,LatLng location){
+
+
+        geoquery=geoFirestore.queryAtLocation(new GeoPoint(location.latitude,location.longitude),5);
+
+        geoquery.addGeoQueryEventListener(new GeoQueryEventListener() {
+            @Override
+            public void onKeyEntered(@NotNull String s, @NotNull GeoPoint geoPoint) {
+                MarkerCluster markers;
+                markers=new MarkerCluster("Marker",new LatLng(geoPoint.getLatitude(),geoPoint.getLongitude()));
+                items.add(markers);
+            }
+
+            @Override
+            public void onKeyExited(@NotNull String s) {
+
+            }
+
+            @Override
+            public void onKeyMoved(@NotNull String s, @NotNull GeoPoint geoPoint) {
+
+            }
+
+            @Override
+            public void onGeoQueryReady() {
+                ClusterManager<MarkerCluster> clusterManager = new ClusterManager<MarkerCluster>(getActivity().getApplicationContext(), googleMap);
+                clusterManager.setRenderer(new MarkerClusterRenderer(getActivity(), googleMap, clusterManager));
+                googleMap.setOnCameraIdleListener(clusterManager);
+                clusterManager.addItems(items);  // 4
+                clusterManager.cluster();
+            }
+
+            @Override
+            public void onGeoQueryError(@NotNull Exception e) {
+
+            }
+        });
 
     }
 
@@ -239,6 +348,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                                     new LatLng(mLastKnownLocation.getLatitude(),
                                             mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
 
+
                         } else {
                             Log.d(TAG, "Current location is null. Using defaults.");
                             Log.e(TAG, "Exception: %s", task.getException());
@@ -246,6 +356,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                                     .newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
                             mMap.getUiSettings().setMyLocationButtonEnabled(false);
                         }
+                        setUpClusterManager(mMap,new LatLng(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude()));
                     }
                 });
             }

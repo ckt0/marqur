@@ -49,7 +49,7 @@ public class AddMarker extends AppCompatActivity {
     private List<String> filenameList;
     private List<String> filedonelist;
 
-    FirebaseFirestore firestore ;
+    private FirebaseFirestore firestore ;
     private EditText tContent;
     private String date_created;
     private List<Uri> phnuri = new ArrayList<>();
