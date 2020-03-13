@@ -16,6 +16,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.github.davidmoten.geo.GeoHash;
+import com.github.davidmoten.geo.LatLong;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -24,8 +26,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-
-import org.imperiumlabs.geofirestore.GeoFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -46,6 +46,7 @@ public class AddMarker extends AppCompatActivity {
     private EditText tTitle;
 
     private Marker marker;
+
     private List<String> filenameList;
     private List<String> filedonelist;
 
@@ -71,7 +72,12 @@ public class AddMarker extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
 
+
+    //For Geohashing
+    private String geoHash;
+
     //database reference
+
     private Double latitude;
     private Double longitude;
     private GeoPoint location;
@@ -150,7 +156,7 @@ public class AddMarker extends AppCompatActivity {
         latitude = i.getDoubleExtra("latitude", 0);
         longitude = i.getDoubleExtra("longitude", 0);
         location=new GeoPoint(latitude,longitude);
-
+        geoHash= GeoHash.encodeHash(new LatLong(latitude,longitude));
     }
 
     private void chooseImage() {
@@ -220,7 +226,7 @@ public class AddMarker extends AppCompatActivity {
 
 
                             icontent = new Content(tTitle.getText().toString().trim(), tContent.getText().toString(), Mmedia);
-                            marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(), null, date_created, date_modified, 0, 0, 0, 0, 0);
+                            marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(), location,geoHash, date_created, date_modified, 0, 0, 0, 0, 0);
                             entertodb();
 
 
@@ -265,7 +271,7 @@ public class AddMarker extends AppCompatActivity {
 
 
         icontent = new Content(tTitle.getText().toString().trim(), tContent.getText().toString(), null);
-        marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(),null, date_created, date_modified, 0, 0, 0, 0, 0);
+        marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(),location,geoHash, date_created, date_modified, 0, 0, 0, 0, 0);
         entertodb();
 
 
@@ -277,8 +283,9 @@ public class AddMarker extends AppCompatActivity {
                     Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
                     markerId =documentReference.getId();
 
-                    GeoFirestore geoFirestore = new GeoFirestore( firestore.collection("marker") );
-                    geoFirestore.setLocation(markerId, location);
+
+
+
 
                     firestore.collection("markers").document(markerId).collection("Content").add(icontent);
                     firestore.collection("users").document(user.getUid()).update("markers", FieldValue.arrayUnion(markerId)).addOnFailureListener(e -> Log.w(TAG, "Error adding document", e));

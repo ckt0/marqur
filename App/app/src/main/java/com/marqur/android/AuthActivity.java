@@ -172,6 +172,9 @@ public class AuthActivity extends AppCompatActivity {
      * Runs when the Sign-In button is pressed, launches Google Sign-In
      */
     public void inititiateGoogleSignIn() {
+        progressBar.setVisibility(View.VISIBLE);
+        navBar.setVisibility(View.GONE);
+        viewPager.setVisibility(View.GONE);
         startActivityForResult(mGoogleSignInClient. getSignInIntent(), GOOGLE_SIGN_IN_REQUEST);
     }
 
@@ -189,9 +192,7 @@ public class AuthActivity extends AppCompatActivity {
         AuthCredential credential = GoogleAuthProvider.getCredential(googleSignInAccount.getIdToken(), null);
 
         //Now using firebase we are signing in the user here
-        progressBar.setVisibility(View.VISIBLE);
-        navBar.setVisibility(View.GONE);
-        viewPager.setVisibility(View.GONE);
+
         firebaseAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, task -> {
 

@@ -54,9 +54,8 @@ dependencies {
     implementation 'com.google.android.libraries.places:places:2.2.0'
     implementation 'com.google.maps.android:android-maps-utils:0.5'
 
-    // Third Party Stuff
-    implementation 'com.github.imperiumlabs:GeoFirestore-Android:v1.5.0'
 
+    implementation 'com.github.davidmoten:geo:0.7.1'
     // Tests, lol
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'

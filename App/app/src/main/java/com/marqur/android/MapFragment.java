@@ -27,6 +27,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.github.davidmoten.geo.GeoHash;
+import com.github.davidmoten.geo.LatLong;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -34,19 +36,21 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.maps.android.clustering.ClusterManager;
 
-import org.imperiumlabs.geofirestore.GeoFirestore;
-import org.imperiumlabs.geofirestore.GeoQuery;
-import org.imperiumlabs.geofirestore.listeners.GeoQueryEventListener;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -68,14 +72,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private Location mLastKnownLocation;
     private boolean isSwipeEnabled = false;
     private boolean count=true;
-    private boolean Obtainedall=false;
     private FloatingActionButton fab;
     private CardView cardView;
     private LatLng mapcoord;
     private FirebaseFirestore firestore ;
-    private GeoQuery geoquery;
-    private GeoFirestore geoFirestore;
-    List<MarkerCluster> items=new ArrayList<>();
+    private List<MarkerCluster> items=new ArrayList<>();
+
+    private MarkerCluster markers;
+
+
 
 
 
@@ -101,7 +106,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         //Initialise firestore
         firestore = FirebaseFirestore.getInstance();
-        geoFirestore = new GeoFirestore( firestore.collection("marker") );
+
 
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
@@ -238,94 +243,66 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             getDeviceLocation();
         }
 
-
-        //TODO display markers that are around the current location
-    mMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
-        @Override
-        public void onCameraMove() {
-            mapcoord = mMap.getCameraPosition().target;
-            geoquery=geoFirestore.queryAtLocation(new GeoPoint(mapcoord.latitude,mapcoord.longitude),5);
-            geoquery.addGeoQueryEventListener(new GeoQueryEventListener() {
-                MarkerCluster markers;
-                @Override
-                public void onKeyEntered(@NotNull String s, @NotNull GeoPoint geoPoint) {
-
-
-
-                }
-
-                @Override
-                public void onKeyExited(@NotNull String s) {
-
-                }
-
-                @Override
-                public void onKeyMoved(@NotNull String s, @NotNull GeoPoint geoPoint) {
-                    markers=new MarkerCluster("Marker",new LatLng(geoPoint.getLatitude(),geoPoint.getLongitude()));
-                    items.add(markers);
-                }
-
-                @Override
-                public void onGeoQueryReady() {
-                    ClusterManager<MarkerCluster> clusterManager = new ClusterManager<MarkerCluster>(getActivity().getApplicationContext(), googleMap);
-                    clusterManager.setRenderer(new MarkerClusterRenderer(getActivity(), googleMap, clusterManager));
-                    googleMap.setOnCameraIdleListener(clusterManager);
-                    clusterManager.addItems(items);  // 4
-                    clusterManager.cluster();
-                }
-
-                @Override
-                public void onGeoQueryError(@NotNull Exception e) {
-
-                }
-            });
-
-        }
-    });
-
-    }
-
-
-
-    private void setUpClusterManager(GoogleMap googleMap,LatLng location){
-
-
-        geoquery=geoFirestore.queryAtLocation(new GeoPoint(location.latitude,location.longitude),5);
-
-        geoquery.addGeoQueryEventListener(new GeoQueryEventListener() {
+        mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
-            public void onKeyEntered(@NotNull String s, @NotNull GeoPoint geoPoint) {
-                MarkerCluster markers;
-                markers=new MarkerCluster("Marker",new LatLng(geoPoint.getLatitude(),geoPoint.getLongitude()));
-                items.add(markers);
-            }
-
-            @Override
-            public void onKeyExited(@NotNull String s) {
-
-            }
-
-            @Override
-            public void onKeyMoved(@NotNull String s, @NotNull GeoPoint geoPoint) {
-
-            }
-
-            @Override
-            public void onGeoQueryReady() {
-                ClusterManager<MarkerCluster> clusterManager = new ClusterManager<MarkerCluster>(getActivity().getApplicationContext(), googleMap);
-                clusterManager.setRenderer(new MarkerClusterRenderer(getActivity(), googleMap, clusterManager));
-                googleMap.setOnCameraIdleListener(clusterManager);
-                clusterManager.addItems(items);  // 4
-                clusterManager.cluster();
-            }
-
-            @Override
-            public void onGeoQueryError(@NotNull Exception e) {
-
+            public void onCameraIdle() {
+                fetchmarkers();
             }
         });
+        //TODO display markers that are around the current location
+
 
     }
+
+    private void fetchmarkers() {
+        LatLngBounds curScreen = mMap.getProjection()
+                .getVisibleRegion().latLngBounds;
+        String ge=GeoHash.encodeHash(new LatLong(curScreen.northeast.latitude,curScreen.northeast.longitude));
+        String he=GeoHash.encodeHash(new LatLong(curScreen.southwest.latitude,curScreen.southwest.longitude));
+        firestore.collection("markers").whereGreaterThanOrEqualTo("geohash",he).whereLessThanOrEqualTo("geohash",ge).addSnapshotListener(new EventListener<QuerySnapshot>() {
+
+            @Override
+            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w(TAG, "Listen failed.", e);
+                    return;
+                }
+
+                for (DocumentChange dc : queryDocumentSnapshots.getDocumentChanges()) {
+                    switch (dc.getType()) {
+                        case ADDED:
+                            Log.d(TAG, "New marker: " + dc.getDocument().getData());
+                            GeoPoint loc= (GeoPoint) dc.getDocument().get("location");
+
+                            markers=new MarkerCluster(dc.getDocument().get("title").toString(),new LatLng(loc.getLatitude(),loc.getLongitude()));
+                            items.add(markers);
+                            setUpClusterManager(mMap);
+                            break;
+                        case MODIFIED:
+                            Log.d(TAG, "Modified city: " + dc.getDocument().getData());
+                            break;
+                        case REMOVED:
+                            Log.d(TAG, "Removed city: " + dc.getDocument().getData());
+                            break;
+                    }
+                }
+            }
+        });
+    }
+
+
+    private void setUpClusterManager(GoogleMap googleMap){
+            ClusterManager<MarkerCluster> clusterManager = new ClusterManager(getActivity().getApplicationContext(), googleMap);  // 3
+            googleMap.setOnCameraIdleListener(clusterManager);
+
+            clusterManager.addItems(items);  // 4
+            clusterManager.cluster();  // 5
+
+        }
+
+
+
+
 
     private void getDeviceLocation() {
         /*
@@ -356,7 +333,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                                     .newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
                             mMap.getUiSettings().setMyLocationButtonEnabled(false);
                         }
-                        setUpClusterManager(mMap,new LatLng(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude()));
+
                     }
                 });
             }

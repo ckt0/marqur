@@ -10,6 +10,7 @@ public class Marker {
     public String date_created;
     public String date_modified;
     public GeoPoint location;
+    public String geohash;
     public int views;
     public int upvotes;
     public int downvotes;
@@ -23,13 +24,14 @@ public class Marker {
     }
 
 
-    public Marker(String title, String author,GeoPoint location, String date_created, String date_modified, int views, int upvotes, int downvotes, int comments_count, int reports) {
+    public Marker(String title, String author,GeoPoint location,String geohash, String date_created, String date_modified, int views, int upvotes, int downvotes, int comments_count, int reports) {
 
         this.title = title;
         this.author = author;
         this.date_created = date_created;
         this.date_modified = date_modified;
         this.location=location;
+        this.geohash=geohash;
         this.views = views;
         this.upvotes = upvotes;
         this.downvotes = downvotes;
