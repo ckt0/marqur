@@ -33,5 +33,7 @@ public class MarkerClusterRenderer extends DefaultClusterRenderer<MarkerCluster>
             markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon));  // 8
             markerOptions.title(item.getTitle());
         }
-    }
+
+
+}
 

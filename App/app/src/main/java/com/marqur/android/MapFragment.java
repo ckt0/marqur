@@ -43,11 +43,8 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.maps.android.clustering.ClusterManager;
 
@@ -77,7 +74,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private LatLng mapcoord;
     private FirebaseFirestore firestore ;
     private List<MarkerCluster> items=new ArrayList<>();
-
+    private ClusterManager<MarkerCluster> clusterManager;
     private MarkerCluster markers;
 
 
@@ -189,6 +186,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     public void onMapReady(GoogleMap googleMap) {
 
         mMap = googleMap;
+        clusterManager = new ClusterManager(getActivity().getApplicationContext(), googleMap);
+        clusterManager.setRenderer(new MarkerClusterRenderer(getActivity(), mMap, clusterManager));
 
         mMap.getUiSettings().setScrollGesturesEnabled(isSwipeEnabled);
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
@@ -242,13 +241,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             getLocationPermission();
             getDeviceLocation();
         }
-
         mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
             public void onCameraIdle() {
                 fetchmarkers();
             }
         });
+
         //TODO display markers that are around the current location
 
 
@@ -257,48 +256,36 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private void fetchmarkers() {
         LatLngBounds curScreen = mMap.getProjection()
                 .getVisibleRegion().latLngBounds;
-        String ge=GeoHash.encodeHash(new LatLong(curScreen.northeast.latitude,curScreen.northeast.longitude));
-        String he=GeoHash.encodeHash(new LatLong(curScreen.southwest.latitude,curScreen.southwest.longitude));
-        firestore.collection("markers").whereGreaterThanOrEqualTo("geohash",he).whereLessThanOrEqualTo("geohash",ge).addSnapshotListener(new EventListener<QuerySnapshot>() {
-
+        String top_right=GeoHash.encodeHash(new LatLong(curScreen.northeast.latitude,curScreen.northeast.longitude));
+        String bottom_left=GeoHash.encodeHash(new LatLong(curScreen.southwest.latitude,curScreen.southwest.longitude));
+        firestore.collection("markers").whereGreaterThanOrEqualTo("geohash",bottom_left).whereLessThanOrEqualTo("geohash",top_right).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
-            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    Log.w(TAG, "Listen failed.", e);
-                    return;
-                }
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
 
-                for (DocumentChange dc : queryDocumentSnapshots.getDocumentChanges()) {
-                    switch (dc.getType()) {
-                        case ADDED:
-                            Log.d(TAG, "New marker: " + dc.getDocument().getData());
-                            GeoPoint loc= (GeoPoint) dc.getDocument().get("location");
+                if (task.isSuccessful()) {
 
-                            markers=new MarkerCluster(dc.getDocument().get("title").toString(),new LatLng(loc.getLatitude(),loc.getLongitude()));
-                            items.add(markers);
-                            setUpClusterManager(mMap);
-                            break;
-                        case MODIFIED:
-                            Log.d(TAG, "Modified city: " + dc.getDocument().getData());
-                            break;
-                        case REMOVED:
-                            Log.d(TAG, "Removed city: " + dc.getDocument().getData());
-                            break;
+                    //clusterManager.clearItems();
+
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        Log.d(TAG, document.getId() + " => " + document.getData());
+                        com.marqur.android.Marker marker=document.toObject(com.marqur.android.Marker.class);
+                        markers=new MarkerCluster(marker.getTitle(),new LatLng(marker.getLocation().getLatitude(),marker.getLocation().getLongitude()));
+                        items.add(markers);
                     }
+                    clusterManager.clearItems();
+                    clusterManager.addItems(items);  // 4
+                    items.clear();
+                    clusterManager.cluster();  // 5
+                } else {
+                    Log.d(TAG, "Error getting documents: ", task.getException());
                 }
             }
         });
+
     }
 
 
-    private void setUpClusterManager(GoogleMap googleMap){
-            ClusterManager<MarkerCluster> clusterManager = new ClusterManager(getActivity().getApplicationContext(), googleMap);  // 3
-            googleMap.setOnCameraIdleListener(clusterManager);
 
-            clusterManager.addItems(items);  // 4
-            clusterManager.cluster();  // 5
-
-        }
 
 
 

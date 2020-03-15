@@ -40,5 +40,91 @@ public class Marker {
 
     }
 
+    public String getTitle() {
+        return title;
+    }
 
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getDate_created() {
+        return date_created;
+    }
+
+    public void setDate_created(String date_created) {
+        this.date_created = date_created;
+    }
+
+    public String getDate_modified() {
+        return date_modified;
+    }
+
+    public void setDate_modified(String date_modified) {
+        this.date_modified = date_modified;
+    }
+
+    public GeoPoint getLocation() {
+        return location;
+    }
+
+    public void setLocation(GeoPoint location) {
+        this.location = location;
+    }
+
+    public String getGeohash() {
+        return geohash;
+    }
+
+    public void setGeohash(String geohash) {
+        this.geohash = geohash;
+    }
+
+    public int getViews() {
+        return views;
+    }
+
+    public void setViews(int views) {
+        this.views = views;
+    }
+
+    public int getUpvotes() {
+        return upvotes;
+    }
+
+    public void setUpvotes(int upvotes) {
+        this.upvotes = upvotes;
+    }
+
+    public int getDownvotes() {
+        return downvotes;
+    }
+
+    public void setDownvotes(int downvotes) {
+        this.downvotes = downvotes;
+    }
+
+    public int getComments_count() {
+        return comments_count;
+    }
+
+    public void setComments_count(int comments_count) {
+        this.comments_count = comments_count;
+    }
+
+    public int getReports() {
+        return reports;
+    }
+
+    public void setReports(int reports) {
+        this.reports = reports;
+    }
 }
