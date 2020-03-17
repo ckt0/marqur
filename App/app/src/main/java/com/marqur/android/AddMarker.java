@@ -226,7 +226,7 @@ public class AddMarker extends AppCompatActivity {
 
 
                             icontent = new Content(tTitle.getText().toString().trim(), tContent.getText().toString(), Mmedia);
-                            marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(), location,geoHash, date_created, date_modified, 0, 0, 0, 0, 0);
+                            marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(), location,geoHash, date_created, date_modified, 0, 0, 0, 0, 0,icontent);
                             entertodb();
 
 
@@ -271,7 +271,7 @@ public class AddMarker extends AppCompatActivity {
 
 
         icontent = new Content(tTitle.getText().toString().trim(), tContent.getText().toString(), null);
-        marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(),location,geoHash, date_created, date_modified, 0, 0, 0, 0, 0);
+        marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(),location,geoHash, date_created, date_modified, 0, 0, 0, 0, 0,icontent);
         entertodb();
 
 
@@ -281,13 +281,6 @@ public class AddMarker extends AppCompatActivity {
                 .add(marker)
                 .addOnSuccessListener(documentReference -> {
                     Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
-                    markerId =documentReference.getId();
-
-
-
-
-
-                    firestore.collection("markers").document(markerId).collection("Content").add(icontent);
                     firestore.collection("users").document(user.getUid()).update("markers", FieldValue.arrayUnion(markerId)).addOnFailureListener(e -> Log.w(TAG, "Error adding document", e));
                 })
                 .addOnFailureListener(e -> Log.w(TAG, "Error adding document", e));

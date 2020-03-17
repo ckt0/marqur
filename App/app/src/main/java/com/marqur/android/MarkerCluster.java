@@ -5,12 +5,20 @@ import com.google.maps.android.clustering.ClusterItem;
 
 public class MarkerCluster implements ClusterItem {
     private String markername;
+    private String markerdesc;
+    public String markerPhoto;
     private LatLng latLng;
 
-    public MarkerCluster(String markername, LatLng latLng) {
+    public MarkerCluster(String markername, String markerdesc, LatLng latLng, String pictureResource) {
+
         this.markername = markername;
+        markerPhoto=pictureResource;
+        this.markerdesc=markerdesc;
         this.latLng = latLng;
+
     }
+
+
 
     @Override
     public LatLng getPosition() {  // The ClusterItem returns the position of the marker, which later Google Maps use’s and show the marker. Must always return same LatLng position.
@@ -24,6 +32,6 @@ public class MarkerCluster implements ClusterItem {
 
     @Override
     public String getSnippet() {
-        return "";
+        return markerdesc;
     }
 }

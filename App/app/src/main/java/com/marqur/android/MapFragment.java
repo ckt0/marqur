@@ -59,6 +59,7 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 public class MapFragment extends Fragment implements OnMapReadyCallback {
 
 
+
     private static final int DEFAULT_ZOOM = 20;
     private static final String TAG = "Marqur Map Fragment";
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
@@ -72,6 +73,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private FloatingActionButton fab;
     private CardView cardView;
     private LatLng mapcoord;
+
     private FirebaseFirestore firestore ;
     private List<MarkerCluster> items=new ArrayList<>();
     private ClusterManager<MarkerCluster> clusterManager;
@@ -254,6 +256,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void fetchmarkers() {
+
+
         LatLngBounds curScreen = mMap.getProjection()
                 .getVisibleRegion().latLngBounds;
         String top_right=GeoHash.encodeHash(new LatLong(curScreen.northeast.latitude,curScreen.northeast.longitude));
@@ -263,13 +267,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
 
                 if (task.isSuccessful()) {
-
-                    //clusterManager.clearItems();
-
                     for (QueryDocumentSnapshot document : task.getResult()) {
                         Log.d(TAG, document.getId() + " => " + document.getData());
                         com.marqur.android.Marker marker=document.toObject(com.marqur.android.Marker.class);
-                        markers=new MarkerCluster(marker.getTitle(),new LatLng(marker.getLocation().getLatitude(),marker.getLocation().getLongitude()));
+                        if(marker.mContent.media==null) {
+                            markers = new MarkerCluster(marker.getTitle(), marker.getmContent().text, new LatLng(marker.getLocation().getLatitude(), marker.getLocation().getLongitude()), null);
+                        }
+                        else
+                            markers = new MarkerCluster(marker.getTitle(), marker.getmContent().text, new LatLng(marker.getLocation().getLatitude(), marker.getLocation().getLongitude()),marker.getmContent().getMedia().get(0).media_id);
                         items.add(markers);
                     }
                     clusterManager.clearItems();

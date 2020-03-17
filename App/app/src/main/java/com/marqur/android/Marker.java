@@ -16,6 +16,7 @@ public class Marker {
     public int downvotes;
     public int comments_count;
     public int reports;
+    public  Content mContent;
 
 
 
@@ -24,7 +25,7 @@ public class Marker {
     }
 
 
-    public Marker(String title, String author,GeoPoint location,String geohash, String date_created, String date_modified, int views, int upvotes, int downvotes, int comments_count, int reports) {
+    public Marker(String title, String author,GeoPoint location,String geohash, String date_created, String date_modified, int views, int upvotes, int downvotes, int comments_count, int reports,Content content) {
 
         this.title = title;
         this.author = author;
@@ -37,6 +38,7 @@ public class Marker {
         this.downvotes = downvotes;
         this.comments_count = comments_count;
         this.reports = reports;
+        this.mContent=content;
 
     }
 
@@ -126,5 +128,13 @@ public class Marker {
 
     public void setReports(int reports) {
         this.reports = reports;
+    }
+
+    public Content getmContent() {
+        return mContent;
+    }
+
+    public void setmContent(Content mContent) {
+        this.mContent = mContent;
     }
 }
