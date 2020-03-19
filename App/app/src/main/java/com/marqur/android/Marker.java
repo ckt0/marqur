@@ -4,7 +4,7 @@ import com.google.firebase.firestore.GeoPoint;
 
 
 public class Marker {
-
+    public String markerid;
     public String title;
     public String author;
     public String date_created;
@@ -25,8 +25,8 @@ public class Marker {
     }
 
 
-    public Marker(String title, String author,GeoPoint location,String geohash, String date_created, String date_modified, int views, int upvotes, int downvotes, int comments_count, int reports,Content content) {
-
+    public Marker(String markerid,String title, String author,GeoPoint location,String geohash, String date_created, String date_modified, int views, int upvotes, int downvotes, int comments_count, int reports,Content content) {
+        this.markerid=markerid;
         this.title = title;
         this.author = author;
         this.date_created = date_created;

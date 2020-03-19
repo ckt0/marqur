@@ -2,12 +2,18 @@
 
     <!-- Base application theme. -->
     <style name="Marqur" parent="Theme.AppCompat.Light.NoActionBar">
-
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:statusBarColor" tools:targetApi="lollipop">@color/colorPrimary</item>
-
+    </style>
+    <style name="Marqur.Launcher">
+        <item name="android:windowBackground">@drawable/launch_screen</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    <!-- Optional, on Android 5+ you can modify the colorPrimaryDark color to match the windowBackground color for further branding-->
+    <!-- <item name="colorPrimaryDark">@android:color/white</item> -->
     </style>
 
     <style name="Marqur.NoActionBar">

@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.google.android.gms.maps.GoogleMap;
@@ -23,6 +24,9 @@ import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 import com.google.maps.android.ui.IconGenerator;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MarkerClusterRenderer extends DefaultClusterRenderer<MarkerCluster>
 
@@ -88,32 +92,51 @@ public class MarkerClusterRenderer extends DefaultClusterRenderer<MarkerCluster>
             }
     }
 
-   /* @Override
-        protected void onBeforeClusterRendered(Cluster<MarkerCluster> cluster, MarkerOptions markerOptions) {
+    @Override
+        protected void onClusterRendered(Cluster<MarkerCluster> cluster, Marker marker) {
             // Draw multiple people.
             // Note: this method runs on the UI thread. Don't spend too much time in here (like in this example).
             List<Drawable> MarkerPhotos = new ArrayList<Drawable>(Math.min(4, cluster.getSize()));
             int width = mDimension;
             int height = mDimension;
 
-            for (MarkerCluster p : cluster.getItems()) {
+            for (MarkerCluster markerCluster : cluster.getItems()) {
                 // Draw 4 at most.
                 if (MarkerPhotos.size() == 4) break;
-                Drawable drawable = mContext.getResources().getDrawable(p.markerPhoto);
-                drawable.setBounds(0, 0, width, height);
-                MarkerPhotos.add(drawable);
+                try {
+                    Glide.with(mContext.getApplicationContext())
+                            .load(markerCluster.markerPhoto)
+                            .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
+                            .into(new CustomTarget<Drawable>(){
+                                @Override
+                                public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                    resource.setBounds(0, 0, width, height);
+                                    MarkerPhotos.add(resource);
+                                    MultiDrawable multiDrawable = new MultiDrawable(MarkerPhotos);
+                                    multiDrawable.setBounds(0, 0, width, height);
+
+                                    mClusterImageView.setImageDrawable(multiDrawable);
+                                    Bitmap icon = mClusterIconGenerator.makeIcon(String.valueOf(cluster.getSize()));
+                                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(icon));
+                                }
+
+                                @Override
+                                public void onLoadCleared(@Nullable Drawable placeholder) {
+
+                                }
+                            });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-            MultiDrawable multiDrawable = new MultiDrawable(MarkerPhotos);
-            multiDrawable.setBounds(0, 0, width, height);
+        Bitmap icon = mClusterIconGenerator.makeIcon(String.valueOf(cluster.getSize()));
+        marker.setIcon(BitmapDescriptorFactory.fromBitmap(icon));
+    }
 
-            mClusterImageView.setImageDrawable(multiDrawable);
-            Bitmap icon = mClusterIconGenerator.makeIcon(String.valueOf(cluster.getSize()));
-            markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon));
-        }
 
-    */
 
-        @Override
+
+    @Override
         protected boolean shouldRenderAsCluster(Cluster cluster) {
             // Always render clusters.
             return cluster.getSize() > 1;

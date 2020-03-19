@@ -7,7 +7,6 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
 /**
  *  StartUp Activity - Handles startup stuff and hosts the viewpager that connects all the fragments
@@ -17,8 +16,8 @@ public class StartUp extends AppCompatActivity {
     private static final int AUTH_REQUEST_CODE = 240;
 
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme( R.style.Marqur_NoActionBar);
         super.onCreate(savedInstanceState);
-
         // If not logged into Firebase,
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
 

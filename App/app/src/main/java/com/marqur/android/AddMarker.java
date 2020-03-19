@@ -33,8 +33,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-
-
+import java.util.UUID;
 
 
 public class AddMarker extends AppCompatActivity {
@@ -88,6 +87,9 @@ public class AddMarker extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         overridePendingTransition(R.anim.fadein, R.anim.fadeout);
         setContentView(R.layout.activity_create_marker);
+
+        //generate an id
+        markerId = UUID.randomUUID().toString();
         //Initialize Views and get current date
         filenameList = new ArrayList<>();
         filedonelist = new ArrayList<>();
@@ -225,8 +227,8 @@ public class AddMarker extends AppCompatActivity {
                         if (count == totalitemselected) {
 
 
-                            icontent = new Content(tTitle.getText().toString().trim(), tContent.getText().toString(), Mmedia);
-                            marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(), location,geoHash, date_created, date_modified, 0, 0, 0, 0, 0,icontent);
+                            icontent = new Content(tTitle.getText().toString().trim().replaceAll( "~"," " ), tContent.getText().toString(), Mmedia);
+                            marker = new Marker(markerId,tTitle.getText().toString().trim().replaceAll( "~","" ), user.getDisplayName(), location,geoHash, date_created, date_modified, 0, 0, 0, 0, 0,icontent);
                             entertodb();
 
 
@@ -271,16 +273,16 @@ public class AddMarker extends AppCompatActivity {
 
 
         icontent = new Content(tTitle.getText().toString().trim(), tContent.getText().toString(), null);
-        marker = new Marker(tTitle.getText().toString().trim(), user.getDisplayName(),location,geoHash, date_created, date_modified, 0, 0, 0, 0, 0,icontent);
+        marker = new Marker(markerId,tTitle.getText().toString().trim(), user.getDisplayName(),location,geoHash, date_created, date_modified, 0, 0, 0, 0, 0,icontent);
         entertodb();
 
 
     }
     private void entertodb(){
-        firestore.collection("markers")
-                .add(marker)
+        firestore.collection("markers").document(markerId)
+                .set(marker)
                 .addOnSuccessListener(documentReference -> {
-                    Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
+
                     firestore.collection("users").document(user.getUid()).update("markers", FieldValue.arrayUnion(markerId)).addOnFailureListener(e -> Log.w(TAG, "Error adding document", e));
                 })
                 .addOnFailureListener(e -> Log.w(TAG, "Error adding document", e));

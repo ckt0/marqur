@@ -15,7 +15,7 @@
     <string name="choose_picture">Choose picture</string>
     <string name="enter_description">Enter description</string>
     <string name="add_marker">Add Marker</string>
-
+    <string name="Location">Location Not Found</string>
     <string name="hello_world">Hello world!</string>
     <string name="todo">TODO</string>
     <string name="action_settings">Settings</string>

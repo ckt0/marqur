@@ -47,6 +47,7 @@ public class AuthActivity extends AppCompatActivity {
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme( R.style.Marqur_NoActionBar );
         super.onCreate(savedInstanceState);
 
         // Initialize Firebase Authentication object

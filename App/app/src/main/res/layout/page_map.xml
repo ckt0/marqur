@@ -8,7 +8,7 @@
     android:orientation="vertical"
     android:layout_height="match_parent">
 
-    <fragment
+    <androidx.fragment.app.FragmentContainerView
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
@@ -22,7 +22,21 @@
         android:layout_margin="20dp"
         android:layout_alignParentBottom="true"
         card_view:cardBackgroundColor="@color/quantum_white_100"
-        card_view:cardCornerRadius="4dp"/>
+        card_view:cardCornerRadius="4dp">
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingStart="?attr/listPreferredItemPaddingStart"
+            android:paddingTop="@dimen/activity_vertical_margin"
+            android:paddingEnd="?attr/listPreferredItemPaddingEnd"
+            android:paddingBottom="?attr/listPreferredItemPaddingEnd"
+            android:text="@string/Location"
+            android:textSize="20sp"
+            android:textStyle="bold|italic"
+            app:autoSizeTextType="none" />
+    </androidx.cardview.widget.CardView>
 
 <!--    <fragment-->
 <!--        android:id="@+id/autocomplete_fragment"-->
@@ -37,10 +51,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
         android:layout_gravity="end|bottom"
         android:layout_marginEnd="24dp"
-        android:layout_marginRight="24dp"
         android:layout_marginBottom="24dp"
         app:maxImageSize="30dp"
         app:srcCompat="@drawable/ic_add_marker_white_24dp" />

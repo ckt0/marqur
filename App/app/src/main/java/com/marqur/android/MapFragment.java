@@ -13,12 +13,15 @@ package com.marqur.android;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -50,8 +53,11 @@ import com.google.maps.android.clustering.ClusterManager;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
@@ -71,6 +77,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private boolean isSwipeEnabled = false;
     private boolean count=true;
     private FloatingActionButton fab;
+    private TextView mplace_name;
+    private List<com.marqur.android.Marker> fetchedmarkers=new ArrayList<> ();
     private CardView cardView;
     private LatLng mapcoord;
 
@@ -87,6 +95,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        requireActivity().setTheme( R.style.Marqur_NoActionBar );
         super.onCreate(savedInstanceState);
     }
 
@@ -118,17 +127,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-
-//        requireView().findViewById(R.id.map).setOnClickListener(this);
-
         //initialise fused location
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
-        //Initialise FAB
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+        //Initialise FAB and Widgets
         fab = getView().findViewById(R.id.search_fab);
         cardView=getView().findViewById(R.id.roam_actions);
-
+        mplace_name=getView().findViewById(R.id.place_name);
         // Initialize the SDK
-        Places.initialize(getActivity(), getString(R.string.google_maps_key));
+        Places.initialize(requireActivity(), getString(R.string.google_maps_key));
         // Create a new Places client instance
 
         // Initialize the AutocompleteSupportFragment.
@@ -156,15 +162,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 //        });
 
         //Floating action button
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        fab.setOnClickListener( view1 -> {
 
-                mapcoord = mMap.getCameraPosition().target;
+            mapcoord = mMap.getCameraPosition().target;
 
-                startActivity(new Intent(getActivity().getApplicationContext(), AddMarker.class).putExtra("latitude", mapcoord.latitude).putExtra("longitude", mapcoord.longitude));
-            }
-        });
+            startActivity(new Intent( requireActivity().getApplicationContext(), AddMarker.class).putExtra("latitude", mapcoord.latitude).putExtra("longitude", mapcoord.longitude));
+        } );
 
     }
 
@@ -188,13 +191,21 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     public void onMapReady(GoogleMap googleMap) {
 
         mMap = googleMap;
-        clusterManager = new ClusterManager(getActivity().getApplicationContext(), googleMap);
+        clusterManager = new ClusterManager<MarkerCluster>( requireActivity().getApplicationContext(), googleMap);
         clusterManager.setRenderer(new MarkerClusterRenderer(getActivity(), mMap, clusterManager));
 
         mMap.getUiSettings().setScrollGesturesEnabled(isSwipeEnabled);
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
+                int index=0;
+                String id=marker.getSnippet().substring( marker.getSnippet().indexOf("~") +1);
+                for(com.marqur.android.Marker fetched_markers:fetchedmarkers){
+                    if(fetched_markers.markerid.equals( id ))
+                        break;
+                    index++;
+                }
+                Log.d(TAG,fetchedmarkers.get( index ).geohash);
                 return false;
                 //TODO create a new activity to display the details of marker
             }
@@ -225,7 +236,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             // in a raw resource file.
             boolean success = googleMap.setMapStyle(
                     MapStyleOptions.loadRawResourceStyle(
-                            getContext(), R.raw.style_json));
+                            requireContext(), R.raw.style_json));
 
             if (!success) {
                 Log.e(TAG, "Style parsing failed.");
@@ -236,7 +247,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
 
 // Call findCurrentPlace and handle the response (first check that the user has granted permission).
-        if (ContextCompat.checkSelfPermission(getContext(), ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(requireContext(), ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mLocationPermissionGranted = true;
             getDeviceLocation();
         } else {
@@ -246,18 +257,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
             public void onCameraIdle() {
-                fetchmarkers();
+                fetch_markers();
             }
         });
-
-        //TODO display markers that are around the current location
-
-
     }
 
-    private void fetchmarkers() {
-
-
+    private void fetch_markers() {
         LatLngBounds curScreen = mMap.getProjection()
                 .getVisibleRegion().latLngBounds;
         String top_right=GeoHash.encodeHash(new LatLong(curScreen.northeast.latitude,curScreen.northeast.longitude));
@@ -267,15 +272,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
 
                 if (task.isSuccessful()) {
-                    for (QueryDocumentSnapshot document : task.getResult()) {
+                    for (QueryDocumentSnapshot document : Objects.requireNonNull( task.getResult() )) {
                         Log.d(TAG, document.getId() + " => " + document.getData());
+
                         com.marqur.android.Marker marker=document.toObject(com.marqur.android.Marker.class);
                         if(marker.mContent.media==null) {
-                            markers = new MarkerCluster(marker.getTitle(), marker.getmContent().text, new LatLng(marker.getLocation().getLatitude(), marker.getLocation().getLongitude()), null);
+                            markers = new MarkerCluster(marker.getTitle(), marker.getmContent().text+"~"+document.getId(), new LatLng(marker.getLocation().getLatitude(), marker.getLocation().getLongitude()), null);
                         }
                         else
-                            markers = new MarkerCluster(marker.getTitle(), marker.getmContent().text, new LatLng(marker.getLocation().getLatitude(), marker.getLocation().getLongitude()),marker.getmContent().getMedia().get(0).media_id);
+                            markers = new MarkerCluster(marker.getTitle(), marker.getmContent().text+"~"+document.getId(), new LatLng(marker.getLocation().getLatitude(), marker.getLocation().getLongitude()),marker.getmContent().getMedia().get(0).media_id);
                         items.add(markers);
+                        if(!fetchedmarkers.contains( marker ))fetchedmarkers.add( marker );
                     }
                     clusterManager.clearItems();
                     clusterManager.addItems(items);  // 4
@@ -304,7 +311,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         try {
             if (mLocationPermissionGranted) {
                 Task<Location> locationResult = mFusedLocationProviderClient.getLastLocation();
-                locationResult.addOnCompleteListener(getActivity(), new OnCompleteListener<Location>() {
+                locationResult.addOnCompleteListener( requireActivity(), new OnCompleteListener<Location>() {
                     @Override
                     public void onComplete(@NotNull Task<Location> task) {
                         if (task.isSuccessful() && task.getResult() != null) {
@@ -316,6 +323,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                     new LatLng(mLastKnownLocation.getLatitude(),
                                             mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                            getAddress();
 
 
                         } else {
@@ -334,18 +342,38 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         }
     }
 
+    private void getAddress() {
+        String addressStr = "";
+        Geocoder myLocation = new Geocoder(getContext(), Locale.getDefault());
+        List<Address> myList = null;
+        try {
+            myList = myLocation.getFromLocation(mLastKnownLocation.getLatitude(),mLastKnownLocation.getLongitude(), 1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Address address = null;
+        if (myList != null) {
+            address = (Address) myList.get(0);
+        }
+
+        if (address != null) {
+            addressStr += address.getAddressLine(0) ;
+        }
+        mplace_name.setText( addressStr);
+    }
+
     private void getLocationPermission() {
         /*
          * Request location permission, so that we can get the location of the
          * device. The result of the permission request is handled by a callback,
          * onRequestPermissionsResult.
          */
-        if (ContextCompat.checkSelfPermission(getActivity().getApplicationContext(),
+        if (ContextCompat.checkSelfPermission( requireActivity().getApplicationContext(),
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             mLocationPermissionGranted = true;
         } else {
-            ActivityCompat.requestPermissions(getActivity(),
+            ActivityCompat.requestPermissions(requireActivity(),
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                     PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
         }
@@ -356,17 +384,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
      */
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String permissions[],
+                                           @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         mLocationPermissionGranted = false;
-        switch (requestCode) {
-            case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    mLocationPermissionGranted = true;
-                    getDeviceLocation();
-                }
+        if (requestCode == PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION) {// If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                mLocationPermissionGranted = true;
+                getDeviceLocation();
             }
         }
 

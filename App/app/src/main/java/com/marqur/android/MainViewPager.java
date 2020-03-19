@@ -7,9 +7,6 @@ import androidx.fragment.app.FragmentPagerAdapter;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
 
 /**
  * Adapter for the main ViewPager that holds all the other fragments.
@@ -37,7 +34,7 @@ public class MainViewPager extends FragmentPagerAdapter {
     @NotNull
     @Override
     public Fragment getItem(int position) {
-        Fragment selected;
+
         switch (position) {
             case 0:
                 mFragmentList[0]= LensFragment.newInstance();
