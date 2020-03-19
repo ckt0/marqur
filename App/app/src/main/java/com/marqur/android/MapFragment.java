@@ -267,7 +267,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 .getVisibleRegion().latLngBounds;
         String top_right=GeoHash.encodeHash(new LatLong(curScreen.northeast.latitude,curScreen.northeast.longitude));
         String bottom_left=GeoHash.encodeHash(new LatLong(curScreen.southwest.latitude,curScreen.southwest.longitude));
-        firestore.collection("markers").whereGreaterThanOrEqualTo("geohash",bottom_left).whereLessThanOrEqualTo("geohash",top_right).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        firestore.collection("markers").whereGreaterThanOrEqualTo("geohash",bottom_left).whereLessThanOrEqualTo("geohash",top_right).orderBy( "votes" ).limit( 100 ).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
 

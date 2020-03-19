@@ -21,6 +21,7 @@ import com.github.davidmoten.geo.LatLong;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
@@ -228,7 +229,7 @@ public class AddMarker extends AppCompatActivity {
 
 
                             icontent = new Content(tTitle.getText().toString().trim().replaceAll( "~"," " ), tContent.getText().toString(), Mmedia);
-                            marker = new Marker(markerId,tTitle.getText().toString().trim().replaceAll( "~","" ), user.getDisplayName(), location,geoHash, date_created, date_modified, 0, 0, 0, 0, 0,icontent);
+                            marker = new Marker(null,tTitle.getText().toString().trim().replaceAll( "~","" ), user.getDisplayName(), location,geoHash, date_created, date_modified, 0, 0, 0, 0, 0,icontent);
                             entertodb();
 
 
@@ -273,18 +274,23 @@ public class AddMarker extends AppCompatActivity {
 
 
         icontent = new Content(tTitle.getText().toString().trim(), tContent.getText().toString(), null);
-        marker = new Marker(markerId,tTitle.getText().toString().trim(), user.getDisplayName(),location,geoHash, date_created, date_modified, 0, 0, 0, 0, 0,icontent);
+        marker = new Marker(null,tTitle.getText().toString().trim(), user.getDisplayName(),location,geoHash, date_created, date_modified, 0, 0, 0, 0, 0,icontent);
         entertodb();
 
 
     }
     private void entertodb(){
-        firestore.collection("markers").document(markerId)
-                .set(marker)
-                .addOnSuccessListener(documentReference -> {
+        firestore.collection("markers")
+                .add(marker)
+                .addOnSuccessListener( new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        firestore.collection( "markers" ).document(documentReference.getId()).update( "markerid",documentReference.getId() );
+                        firestore.collection("users").document(user.getUid()).update("markers", FieldValue.arrayUnion(markerId)).addOnFailureListener(e -> Log.w(TAG, "Error adding document", e));
 
-                    firestore.collection("users").document(user.getUid()).update("markers", FieldValue.arrayUnion(markerId)).addOnFailureListener(e -> Log.w(TAG, "Error adding document", e));
-                })
+                    }
+                } )
+
                 .addOnFailureListener(e -> Log.w(TAG, "Error adding document", e));
 
 
