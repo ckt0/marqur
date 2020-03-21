@@ -61,6 +61,7 @@ public class MarkerClusterRenderer extends DefaultClusterRenderer<MarkerCluster>
         protected void onBeforeClusterItemRendered(MarkerCluster item, MarkerOptions markerOptions) { // 5
             if(item.markerPhoto==null)
                 markerImageView.setImageResource(R.mipmap.marker);
+
             Bitmap icon = iconGenerator.makeIcon();  // 7
             markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon));  // 8
             markerOptions.title(item.getTitle());
@@ -69,6 +70,7 @@ public class MarkerClusterRenderer extends DefaultClusterRenderer<MarkerCluster>
     @Override
     protected void onClusterItemRendered(MarkerCluster clusterItem, Marker marker) {
             if(clusterItem.markerPhoto==null) {super.onClusterItemRendered(clusterItem,marker);}
+
             else {
                 Glide.with(mContext.getApplicationContext())
                         .load(clusterItem.markerPhoto)

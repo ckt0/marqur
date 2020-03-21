@@ -38,10 +38,11 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
-import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
@@ -49,20 +50,23 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.maps.android.clustering.ClusterItem;
 import com.google.maps.android.clustering.ClusterManager;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 
-public class MapFragment extends Fragment implements OnMapReadyCallback {
+public class MapFragment extends Fragment implements OnMapReadyCallback, ClusterManager.OnClusterItemClickListener {
 
 
 
@@ -78,12 +82,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private boolean count=true;
     private FloatingActionButton fab;
     private TextView mplace_name;
-    private List<com.marqur.android.Marker> fetchedmarkers=new ArrayList<> ();
+
     private CardView cardView;
     private LatLng mapcoord;
+    private Map<String, com.marqur.android.Marker> currently_fetched=new HashMap<>(  );
 
     private FirebaseFirestore firestore ;
-    private List<MarkerCluster> items=new ArrayList<>();
+
     private ClusterManager<MarkerCluster> clusterManager;
     private MarkerCluster markers;
 
@@ -195,22 +200,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         clusterManager.setRenderer(new MarkerClusterRenderer(getActivity(), mMap, clusterManager));
 
         mMap.getUiSettings().setScrollGesturesEnabled(isSwipeEnabled);
-        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-                int index=0;
-                String id=marker.getSnippet().substring( marker.getSnippet().indexOf("~") +1);
-                for(com.marqur.android.Marker fetched_markers:fetchedmarkers){
-                    if(fetched_markers.markerid.equals( id ))
-                        break;
-                    index++;
-                }
-                Log.d(TAG,fetchedmarkers.get( index ).geohash);
-                return false;
-                //TODO create a new activity to display the details of marker
-            }
-        });
-
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
@@ -267,26 +256,26 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 .getVisibleRegion().latLngBounds;
         String top_right=GeoHash.encodeHash(new LatLong(curScreen.northeast.latitude,curScreen.northeast.longitude));
         String bottom_left=GeoHash.encodeHash(new LatLong(curScreen.southwest.latitude,curScreen.southwest.longitude));
-        firestore.collection("markers").whereGreaterThanOrEqualTo("geohash",bottom_left).whereLessThanOrEqualTo("geohash",top_right).orderBy( "votes" ).limit( 100 ).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        firestore.collection("markers").whereGreaterThanOrEqualTo("geohash",bottom_left).whereLessThanOrEqualTo("geohash",top_right).orderBy( "geohash" ).orderBy( "upvotes" ).limit( 100 ).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
 
                 if (task.isSuccessful()) {
                     for (QueryDocumentSnapshot document : Objects.requireNonNull( task.getResult() )) {
-                        Log.d(TAG, document.getId() + " => " + document.getData());
+                        Log.d( TAG, document.getId() + " => " + document.getData() );
 
-                        com.marqur.android.Marker marker=document.toObject(com.marqur.android.Marker.class);
-                        if(marker.mContent.media==null) {
-                            markers = new MarkerCluster(marker.getTitle(), marker.getmContent().text+"~"+document.getId(), new LatLng(marker.getLocation().getLatitude(), marker.getLocation().getLongitude()), null);
+                        com.marqur.android.Marker marker = document.toObject( com.marqur.android.Marker.class );
+                        if (!currently_fetched.containsKey( marker.markerid )) {
+                            if (marker.mContent.media == null) {
+                                markers = new MarkerCluster( marker.getTitle(), marker.getmContent().text + "~" + document.getId(), new LatLng( marker.getLocation().getLatitude(), marker.getLocation().getLongitude() ), null );
+                            } else
+                                markers = new MarkerCluster( marker.getTitle(), marker.getmContent().text + "~" + document.getId(), new LatLng( marker.getLocation().getLatitude(), marker.getLocation().getLongitude() ), marker.getmContent().getMedia().get( 0 ).media_id );
+                            clusterManager.addItem( markers );
+                            currently_fetched.put( marker.markerid,marker );
+
                         }
-                        else
-                            markers = new MarkerCluster(marker.getTitle(), marker.getmContent().text+"~"+document.getId(), new LatLng(marker.getLocation().getLatitude(), marker.getLocation().getLongitude()),marker.getmContent().getMedia().get(0).media_id);
-                        items.add(markers);
-                        if(!fetchedmarkers.contains( marker ))fetchedmarkers.add( marker );
                     }
-                    clusterManager.clearItems();
-                    clusterManager.addItems(items);  // 4
-                    items.clear();
+
                     clusterManager.cluster();  // 5
                 } else {
                     Log.d(TAG, "Error getting documents: ", task.getException());
@@ -317,12 +306,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                         if (task.isSuccessful() && task.getResult() != null) {
                             mLastKnownLocation = task.getResult();
                             // Set the map's camera position to the current location of the device.
-
+                            LatLng position=new LatLng(mLastKnownLocation.getLatitude(),
+                                    mLastKnownLocation.getLongitude());
                             mMap.clear();
 
                             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                    new LatLng(mLastKnownLocation.getLatitude(),
-                                            mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                                    position, DEFAULT_ZOOM));
+
+                            mMap.addMarker( new MarkerOptions().position(position ).title( "Current position" ).icon( BitmapDescriptorFactory.fromResource(R.drawable.placeholder) ) );
                             getAddress();
 
 
@@ -397,4 +388,21 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     }
 
+    @Override
+    public boolean onClusterItemClick(ClusterItem clusterItem) {
+        if(!clusterItem.getTitle().equals( "Current position" )) {
+            com.marqur.android.Marker marker1 = new com.marqur.android.Marker();
+            Iterator keyIterator = currently_fetched.keySet().iterator();
+            String id = clusterItem.getSnippet().substring( clusterItem.getSnippet().indexOf( "~" ) + 1 );
+            while (keyIterator.hasNext()) {
+                String key = keyIterator.next().toString();
+                if (id.equals( key )) {
+                    marker1 = currently_fetched.get( key );
+                    break;
+                }
+            }
+            Log.d( TAG, Objects.requireNonNull( marker1 ).geohash );
+        }
+        return false;
+    }
 }
