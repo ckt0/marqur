@@ -39,6 +39,8 @@ public class MarkerClusterRenderer extends DefaultClusterRenderer<MarkerCluster>
         private final int mDimension;
         private Context mContext;
 
+
+        //Constructor for markercluster to initialise
         public MarkerClusterRenderer(Context context, GoogleMap map, ClusterManager<MarkerCluster> clusterManager) {
             super(context, map, clusterManager);
             mContext=context;
@@ -67,8 +69,11 @@ public class MarkerClusterRenderer extends DefaultClusterRenderer<MarkerCluster>
             markerOptions.title(item.getTitle());
         }
 
+
+        //draws a single marker using Glide
     @Override
     protected void onClusterItemRendered(MarkerCluster clusterItem, Marker marker) {
+
             if(clusterItem.markerPhoto==null) {super.onClusterItemRendered(clusterItem,marker);}
 
             else {
@@ -97,7 +102,7 @@ public class MarkerClusterRenderer extends DefaultClusterRenderer<MarkerCluster>
     @Override
         protected void onClusterRendered(Cluster<MarkerCluster> cluster, Marker marker) {
             // Draw multiple people.
-            // Note: this method runs on the UI thread. Don't spend too much time in here (like in this example).
+            // Note: this method runs on the UI thread.
             List<Drawable> MarkerPhotos = new ArrayList<Drawable>(Math.min(4, cluster.getSize()));
             int width = mDimension;
             int height = mDimension;

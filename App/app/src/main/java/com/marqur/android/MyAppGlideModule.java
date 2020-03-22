@@ -11,6 +11,7 @@ import com.google.firebase.storage.StorageReference;
 
 import java.io.InputStream;
 
+//Class needed for Glide fetching image
 @GlideModule
 public class MyAppGlideModule extends AppGlideModule {
 

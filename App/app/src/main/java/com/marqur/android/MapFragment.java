@@ -1,6 +1,6 @@
 /**
  * Manipulates the map once available.
- * This callback is triggered when the map is ready to be used.
+ * This callback is triggered when the ma';/p is ready to be used.
  * This is where we can add Marker or lines, add listeners or move the camera. In this case,
  * we just add a marker near Sydney, Australia.
  * If Google Play services is not installed on the device, the user will be prompted to install
@@ -200,6 +200,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Cluster
         clusterManager.setRenderer(new MarkerClusterRenderer(getActivity(), mMap, clusterManager));
 
         mMap.getUiSettings().setScrollGesturesEnabled(isSwipeEnabled);
+
+        //Set to enable or disable swipe when using maps
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
@@ -312,7 +314,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Cluster
 
                             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                     position, DEFAULT_ZOOM));
-
+                            //Set the current location marker
                             mMap.addMarker( new MarkerOptions().position(position ).title( "Current position" ).icon( BitmapDescriptorFactory.fromResource(R.drawable.placeholder) ) );
                             getAddress();
 
@@ -333,6 +335,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Cluster
         }
     }
 
+    //Get details about the current location from lattitude and longitude
     private void getAddress() {
         String addressStr = "";
         Geocoder myLocation = new Geocoder(getContext(), Locale.getDefault());
@@ -388,6 +391,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Cluster
 
     }
 
+    //Extracts the marker id from the snippet in order to identify the marker in the database
     @Override
     public boolean onClusterItemClick(ClusterItem clusterItem) {
         if(!clusterItem.getTitle().equals( "Current position" )) {
