@@ -2,14 +2,17 @@ package com.marqur.android;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.hardware.Camera;
 
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,10 +24,16 @@ import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import com.github.davidmoten.geo.GeoHash;
+import com.github.davidmoten.geo.LatLong;
+import com.google.firebase.firestore.GeoPoint;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
+import java.util.UUID;
 
 import static android.content.Context.SENSOR_SERVICE;
 
@@ -45,7 +54,10 @@ public class LensFragment extends Fragment {
     private float[] magnetometerReading = new float[3];
     private float[] rotationMatrix = new float[9];
     private float[] orientationAngles = new float[3];
-    private int compassDirection = 0;
+    private int bearing = 0;
+
+    boolean[] markerVisible;
+    Marker[] markerBuffer;
 
     private static final int PERMISSION_REQUEST_CODE = 200;
 
@@ -71,6 +83,33 @@ public class LensFragment extends Fragment {
      */
     public void onViewCreated(@NotNull View view, Bundle savedInstanceState) {
 
+        markerVisible = new boolean[30];
+        markerBuffer = new Marker[30];
+
+        for (int i = 0; i < 30; i++){
+            markerVisible[i] = false;
+        }
+
+        markerBuffer[0] = new Marker(UUID.randomUUID().toString(),"Dummy Marker #1","chris", new GeoPoint(37.422,-122.084),
+                GeoHash.encodeHash(new LatLong(37.422,-122.084)),
+                "16-03-2020","16-03-2020",0,0,0,0,0,
+                new Content("Dummy Content","Dummy description", null));
+
+        markerBuffer[1] = new Marker(UUID.randomUUID().toString(),"Dummy Marker #2","chris", new GeoPoint(37.421,-122.083),
+                GeoHash.encodeHash(new LatLong(37.421,-122.083)),
+                "16-03-2020","16-03-2020",0,0,0,0,0,
+                new Content("Dummy Content","Dummy description", null));
+
+        markerBuffer[2] = new Marker(UUID.randomUUID().toString(),"Dummy Marker #3","chris", new GeoPoint(37.420,-122.082),
+                GeoHash.encodeHash(new LatLong(37.420,-122.082)),
+                "16-03-2020","16-03-2020",0,0,0,0,0,
+                new Content("Dummy Content","Dummy description", null));
+
+        markerBuffer[3] = new Marker(UUID.randomUUID().toString(),"Dummy Marker #4","chris", new GeoPoint(37.419,-122.081),
+                GeoHash.encodeHash(new LatLong(37.419,-122.081)),
+                "16-03-2020","16-03-2020",0,0,0,0,0,
+                new Content("Dummy Content","Dummy description", null));
+
         // Apply cool fade-blink animation to camera icon in the view
         Animation animation = new AlphaAnimation(1, 0);
         animation.setDuration(700);
@@ -95,7 +134,7 @@ public class LensFragment extends Fragment {
         ((MainActivity)context).getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         // If camera permissions not granted
-        if (!((MainActivity)context).checkPermission(Manifest.permission.CAMERA)) {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
 
             // Only request if camera page open
             if (((MainActivity)context).getPage() == 0) {
@@ -204,6 +243,7 @@ public class LensFragment extends Fragment {
     public void onResume() {
         super.onResume();
         Log.println(Log.ASSERT,"LENSFRAGMENT","RESUMED");
+
     }
 
 
@@ -349,7 +389,7 @@ public class LensFragment extends Fragment {
         // If accelerometer obtained successfully, register the accelListener defined below
         if (accelerometer != null) {
             sensorManager.registerListener(new accelListener(),
-                    accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+                    accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
         } else {
             Log.println(Log.WARN,"Lens: ","No Accelerometer Available!");
         }
@@ -360,7 +400,7 @@ public class LensFragment extends Fragment {
         // If magnetometer obtained successfully, register the magnetListener defined below
         if (magneticField != null) {
             sensorManager.registerListener(new magnetListener(),
-                    magneticField, SensorManager.SENSOR_DELAY_NORMAL);
+                    magneticField, SensorManager.SENSOR_DELAY_FASTEST);
         } else {
             Log.println(Log.WARN,"Lens: ","No Magnetometer Available!");
         }
@@ -389,11 +429,11 @@ public class LensFragment extends Fragment {
             updateOrientationAngles();
 
             //debug
-            if(orientationAngles[1]<-0.9) {
-                ar_button1.setText("Valid");
-            } else {
-                ar_button1.setText("Invalid");
-            }
+//            if(orientationAngles[1]<-0.9) {
+//                ar_button1.setText("Valid");
+//            } else {
+//                ar_button1.setText("Invalid");
+//            }
         }
 
 
@@ -428,10 +468,12 @@ public class LensFragment extends Fragment {
             updateOrientationAngles();
 
             // Converts the orientation angle to compass degrees.
-            compassDirection = (int) Math.round(Math.toDegrees(orientationAngles[0]));
+            bearing = (int) Math.round(Math.toDegrees(orientationAngles[0]));
 
             //debug
-            ar_button2.setText(String.format(Locale.getDefault(),"%d", compassDirection));
+//            ar_button2.setText(String.format(Locale.getDefault(),"%d", bearing));
+
+            drawMarkers();
         }
 
 
@@ -459,4 +501,136 @@ public class LensFragment extends Fragment {
         SensorManager.getOrientation(rotationMatrix, orientationAngles);
     }
 
+
+
+    public void drawMarkers(){
+
+        Location myLoc = ((MainActivity)requireActivity()).getMyLocation();
+        if (myLoc==null) return;
+
+        ViewGroup root = requireView().findViewById(R.id.lens_ar_canvas);
+
+        double inclination = Math.round(Math.toDegrees(Math.acos(rotationMatrix[8])));
+        ar_button1.setText(String.format(Locale.getDefault(), "%.2f", inclination));
+
+        if(inclination > 90) {
+            if (bearing >= 0) bearing -= 180;
+            else bearing += 180;
+        }
+        ar_button2.setText(String.format(Locale.getDefault(),"%d", bearing));
+
+        for(int i = 0; i<30; i++) {
+
+            if (markerBuffer[i]!=null) {
+
+                Location markerLoc = new Location("");
+                markerLoc.setLatitude(markerBuffer[i].location.getLatitude());
+                markerLoc.setLongitude(markerBuffer[i].location.getLongitude());
+
+                double distance = myLoc.distanceTo(markerLoc);
+
+                double x = Math.cos(markerLoc.getLatitude());
+                x = x * Math.sin(markerLoc.getLongitude() - myLoc.getLongitude());
+
+                double y = Math.cos(myLoc.getLatitude()) * Math.sin(markerLoc.getLatitude());
+                y = y - Math.sin(myLoc.getLatitude()) * Math.cos(markerLoc.getLatitude());
+                y = y * Math.cos(markerLoc.getLongitude() - myLoc.getLongitude());
+
+                double markerHeading = Math.toDegrees(Math.atan2(x, y));
+
+
+                if ((distance < 500) && (bearing < (markerHeading + 30)) && (bearing > (markerHeading - 30))) {
+                   //if (inclination>30)
+                    if (!markerVisible[i]) {
+
+                        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(300,300);
+
+                        View markerView = LayoutInflater.from(requireContext()).inflate(R.layout.lens_marker, root, false);
+                        ((TextView) markerView.findViewById(R.id.lens_marker_view_title)).setText(markerBuffer[i].title);
+                        markerView.setId(getMarkerViewId(i));
+                        root.addView(markerView,params);
+
+//                        LensMarkerView marker = new LensMarkerView(requireContext());
+//                        marker.init(markerBuffer[i].title);
+//                        marker.setId(getMarkerViewId(i));
+//                        root.addView(marker,params);
+
+                        Log.println(Log.ASSERT,"LENSFRAGMENT.D","ADDED MARKER #"+i);
+                        markerVisible[i] = true;
+//                        ar_button1.setText("MATCH!");
+                    }
+
+                    View markerView = root.findViewById(getMarkerViewId(i));
+
+                    float markerViewCentreX = (float) (markerView.getWidth() / 2.0);
+                    float markerViewCentreY = (float) (markerView.getHeight() / 2.0);
+                    float rootCentreX = (float) (root.getX() + root.getWidth() / 2.0);
+                    float markerCentrePositionX = (float) ((rootCentreX - root.getX())-markerViewCentreX);
+
+                    if(inclination > 90)
+                        markerView.setTranslationY((float)
+                                (((-(-1.6 - orientationAngles[1]) / 1.6) * root.getHeight()) +
+                                        (root.getHeight() - ((distance / 500) * root.getHeight()) - markerViewCentreY)));
+                    else
+                        markerView.setTranslationY((float)
+                                ((((-1.6 - orientationAngles[1]) / 1.6) * root.getHeight()) +
+                                        (root.getHeight() - ((distance / 500) * root.getHeight()) - markerViewCentreY)));
+
+                    markerView.setTranslationX((float)
+                            (markerCentrePositionX - (bearing - markerHeading) * (root.getWidth() / 60.0)));
+//                    ar_button1.setText(String.format(Locale.getDefault(), "%.2f", distance));
+
+                } else {
+
+
+                    if (markerVisible[i]) {
+                        Log.println(Log.ASSERT,"LENSFRAGMENT.D","REMOVING MARKER #"+i);
+//                        AlphaAnimation anim = new AlphaAnimation(1.0f, 0.0f);
+//                        anim.setDuration(200);
+//                        anim.setRepeatCount(NUM_REPEATS);
+//                        anim.setRepeatMode(Animation.REVERSE);
+//                        root.findViewById(getMarkerViewId(i)).startAnimation(anim);
+                        root.removeView(root.findViewById(getMarkerViewId(i)));
+                        markerVisible[i] = false;
+//                        ar_button1.setText(String.format(Locale.getDefault(), "%.2f", markerHeading));
+                    }
+                }
+            }
+        }
+    }
+
+    private int getMarkerViewId(int i) {
+        switch(i){
+            case 0: return R.id.lens_marker_0;
+            case 1: return R.id.lens_marker_1;
+            case 2: return R.id.lens_marker_2;
+            case 3: return R.id.lens_marker_3;
+            case 4: return R.id.lens_marker_4;
+            case 5: return R.id.lens_marker_5;
+            case 6: return R.id.lens_marker_6;
+            case 7: return R.id.lens_marker_7;
+            case 8: return R.id.lens_marker_8;
+            case 9: return R.id.lens_marker_9;
+            case 10: return R.id.lens_marker_10;
+            case 11: return R.id.lens_marker_11;
+            case 12: return R.id.lens_marker_12;
+            case 13: return R.id.lens_marker_13;
+            case 14: return R.id.lens_marker_14;
+            case 15: return R.id.lens_marker_15;
+            case 16: return R.id.lens_marker_16;
+            case 17: return R.id.lens_marker_17;
+            case 18: return R.id.lens_marker_18;
+            case 19: return R.id.lens_marker_19;
+            case 20: return R.id.lens_marker_20;
+            case 21: return R.id.lens_marker_21;
+            case 22: return R.id.lens_marker_22;
+            case 23: return R.id.lens_marker_23;
+            case 24: return R.id.lens_marker_24;
+            case 25: return R.id.lens_marker_25;
+            case 26: return R.id.lens_marker_26;
+            case 27: return R.id.lens_marker_27;
+            case 28: return R.id.lens_marker_28;
+            default: return R.id.lens_marker_29;
+        }
+    }
 }

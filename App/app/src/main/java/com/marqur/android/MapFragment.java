@@ -343,7 +343,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Cluster
             e.printStackTrace();
         }
         Address address = null;
-        if (myList != null) {
+        if ((myList != null) && (myList.size() > 0)) {
             address = (Address) myList.get(0);
         }
 
