@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
+import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,6 +20,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.viewpager.widget.ViewPager;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -27,6 +31,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -40,7 +45,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "Main";
 
-    private static final int PERMISSION_REQUEST_CODE = 200;
+    private static final int PERMISSION_CAMERA_REQUEST_CODE = 200;
+    private static final int PERMISSION_LOCATION_REQUEST_CODE = 220;
     private static final int AUTH_REQUEST_CODE = 250;
 
     private AppBarLayout appBar;
@@ -52,9 +58,12 @@ public class MainActivity extends AppCompatActivity {
     private String[] pageTitles = {"Lens","Browse","Roam"};
     private int[] pageIcons = {R.drawable.ic_eye_white_24dp, R.drawable.ic_view_white_24dp, R.drawable.ic_map_white_24dp};
 
+    private FusedLocationProviderClient fusedLocationClient;
+
     private FirebaseAuth mFirebaseAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
 
+    public Location myLocation;
     public boolean isLoggedIn = false;
     public boolean isAppBarExpanded = false;
     public String appBarTitle = "Marqur";
@@ -78,7 +87,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Setup an Authentication State Listener to monitor whether user signed into Firebase
         mAuthListener = firebaseAuth -> {
-
             checkAuth();
         };
 
@@ -90,6 +98,32 @@ public class MainActivity extends AppCompatActivity {
 
         // Inflate (draw) the main ViewPager layout
         setContentView(R.layout.main_viewpager);
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    PERMISSION_LOCATION_REQUEST_CODE);
+
+        } else {
+
+            getMyLocation();
+//            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+//            fusedLocationClient.getLastLocation()
+//                    .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+//                        @Override
+//                        public void onSuccess(Location location) {
+//                            // Got last known location. In some rare situations this can be null.
+//                            if (location != null) {
+//                                myLocation = location;
+//                            } else {
+//
+//                            }
+//                        }
+//                    });
+
+        }
 
         setupView();
 
@@ -116,6 +150,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Keep Authentication Status synced with backend
         mFirebaseAuth.addAuthStateListener(mAuthListener);
+
+
     }
 
 
@@ -290,7 +326,7 @@ public class MainActivity extends AppCompatActivity {
      * @return Whether camera permission granted
      */
     public void requestPermission(String permission) {
-        ActivityCompat.requestPermissions(this, new String[]{permission}, PERMISSION_REQUEST_CODE);
+        ActivityCompat.requestPermissions(this, new String[]{permission}, PERMISSION_CAMERA_REQUEST_CODE);
         Log.d(TAG, "Requesting permission "+permission+"....");
     }
 
@@ -304,13 +340,14 @@ public class MainActivity extends AppCompatActivity {
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, @NotNull int[] grantResults) {
-        if (requestCode == PERMISSION_REQUEST_CODE) {
 
-            // If permission was granted,
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        // If permission was granted,
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                // #justdebugthings
-                Log.e(TAG, "Application was granted permission "+permissions[0]+" !");
+            // #justdebugthings
+            Log.e(TAG, "Application was granted permission "+permissions[0]+" !");
+
+            if (requestCode == PERMISSION_CAMERA_REQUEST_CODE) {
 
                 if ("android.permission.CAMERA".equals(permissions[0])) {
                     if(getPage()==0) {
@@ -318,44 +355,44 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
 
-            } else {
+            } else if (requestCode == PERMISSION_LOCATION_REQUEST_CODE) {
 
-                // #justdebugthings
-                Log.e(TAG, "Application was denied permission "+permissions[0]+" !");
-
-                // Safety Check (Only works above Marshmellow)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-
-                    // If user had the audacity to deny permissions,
-                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                            != PackageManager.PERMISSION_GRANTED) {
-
-                        // Set message to use in Dialog box below
-                        String dialogMessage;
-                        if ("android.permission.CAMERA".equals(permissions[0])) {
-                            dialogMessage = "Marqur needs Camera permissions for AR functionality!";
-                        }
-                        dialogMessage = "Marqur needs this permission to work correctly!";
-
-                        // Use a Dialog message to pester user further
-                        new AlertDialog.Builder(this)
-                                .setMessage(dialogMessage)
-                                .setPositiveButton("Grant", (dialog, which) -> {
-                                    if (which == DialogInterface.BUTTON_POSITIVE) {
-                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                            Log.d(TAG,"Re-requesting permission "+permissions[0]+"...");
-                                            requestPermission(permissions[0]);
-                                        }
-                                    }
-                                    else if (which == DialogInterface.BUTTON_NEGATIVE) {
-                                        Log.e(TAG, "Application was denied "+permissions[0]+" AGAIN!");
-                                        viewPager.setCurrentItem(1);
-                                    }
-                                })
-                                .setNegativeButton("Cancel", null)
-                                .create().show();
-                    }
+                if ("android.permission.ACCESS_FINE_LOCATION".equals(permissions[0])) {
                 }
+
+            }
+        }   else {
+
+            // #justdebugthings
+            Log.e(TAG, "Application was denied permission " + permissions[0] + " !");
+
+            // Safety Check (Only works above Marshmellow)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+                // Set message to use in Dialog box below
+                String dialogMessage;
+                if ("android.permission.CAMERA".equals(permissions[0])) {
+                    dialogMessage = "Marqur needs Camera permissions for AR functionality!";
+                } else if ("android.permission.ACCESS_FINE_LOCATION".equals(permissions[0])) {
+                    dialogMessage = "Marqur needs Location permissions for fetching content!";
+                } else dialogMessage = "Marqur needs this permission to work correctly!";
+
+                // Use a Dialog message to pester user further
+                new AlertDialog.Builder(this)
+                        .setMessage(dialogMessage)
+                        .setPositiveButton("Grant", (dialog, which) -> {
+                            if (which == DialogInterface.BUTTON_POSITIVE) {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                    Log.d(TAG, "Re-requesting permission " + permissions[0] + "...");
+                                    requestPermission(permissions[0]);
+                                }
+                            } else if (which == DialogInterface.BUTTON_NEGATIVE) {
+                                Log.e(TAG, "Application was denied " + permissions[0] + " AGAIN!");
+                                viewPager.setCurrentItem(1);
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .create().show();
             }
         }
     }
@@ -465,6 +502,28 @@ public class MainActivity extends AppCompatActivity {
         item.setVisible(true);
     }
 
+
+
+    public Location getMyLocation(){
+
+//        if (fusedLocationClient==null) {
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+//        }
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            myLocation = location;
+                        } else {
+
+                        }
+                    }
+                });
+
+        return myLocation;
+    }
 
 
     /**

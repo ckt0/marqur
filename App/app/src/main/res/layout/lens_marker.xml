@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+<!--    <View-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="0dp"-->
+<!--        android:layout_weight="1">-->
+    <ImageView
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:adjustViewBounds="true"
+        android:layout_gravity="center_horizontal"
+        android:scaleType="fitCenter"
+        android:src="@mipmap/marker0"
+        android:contentDescription="Lens marker cover image" />
+<!--    </View>-->
+    <TextView
+        android:id="@+id/lens_marker_view_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Title Here"
+        android:textSize="15sp"
+        android:scrollHorizontally="true"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textColor="@color/quantum_white_100"
+        android:background="@color/quantum_black_100"
+        android:alpha="0.3"/>
+</LinearLayout>

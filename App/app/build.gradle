@@ -58,6 +58,7 @@ dependencies {
     //Third party
     implementation 'com.github.davidmoten:geo:0.7.1'
     implementation 'com.github.bumptech.glide:glide:4.11.0'
+
     // Tests, lol
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
