@@ -5,8 +5,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 
-import org.jetbrains.annotations.NotNull;
-
 
 /**
  * Adapter for the main ViewPager that holds all the other fragments.
@@ -31,7 +29,6 @@ public class MainViewPager extends FragmentPagerAdapter {
      * @param position - The fragment position
      * @return The fragment at that position
      */
-    @NotNull
     @Override
     public Fragment getItem(int position) {
 

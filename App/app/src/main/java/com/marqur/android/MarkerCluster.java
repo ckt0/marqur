@@ -9,7 +9,8 @@ public class MarkerCluster implements ClusterItem {
     public String markerPhoto;
     private LatLng latLng;
 
-    public MarkerCluster(String markername, String markerdesc, LatLng latLng, String pictureResource) {
+
+    MarkerCluster(String markername, String markerdesc, LatLng latLng, String pictureResource) {
 
         this.markername = markername;
         markerPhoto=pictureResource;

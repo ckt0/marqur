@@ -76,7 +76,7 @@
 <!--        AddMarker Activity -->
         <activity android:name="com.marqur.android.AddMarker"
             android:label="@string/title_activity_map_add_marker" />
-
+        <activity android:name=".Post" />
 
 
     </application>

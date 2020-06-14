@@ -2,7 +2,7 @@ package com.marqur.android;
 
 import java.util.List;
 
-public class Content {
+public class Content  {
 
     public String title;
     public String text;
@@ -37,7 +37,7 @@ public class Content {
         this.text = text;
     }
 
-    public List<Media> getMedia() {
+    List<Media> getMedia() {
         return media;
     }
 

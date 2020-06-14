@@ -15,7 +15,7 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.common.SignInButton;
 
-import org.jetbrains.annotations.NotNull;
+
 
 
 public class LoginFragment extends Fragment {
@@ -44,7 +44,7 @@ public class LoginFragment extends Fragment {
      * @param view - Created view
      * @param savedInstanceState - Saved instance data
      */
-    public void onViewCreated(@NotNull View view, Bundle savedInstanceState) {
+    public void onViewCreated( View view, Bundle savedInstanceState) {
 
         // Fetching views
         editTextEmail = requireView().findViewById(R.id.editTextEmail);
