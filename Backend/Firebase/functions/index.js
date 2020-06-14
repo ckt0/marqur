@@ -1,9 +1,21 @@
 
 /*
+
 ===============================
                     The marqur Backend
 ===============================       
+
+Uses Firebase Cloud Functions to set up a 
+serverless backend for the marqur platform. 
+This file contains all the code for the marqur API. 
+Handle with care!
+
 */
+
+
+
+                /* [ App Initialization ] */
+
 
 
 // Required SDKs
@@ -13,81 +25,87 @@ const express = require('express');
 const cors = require('cors');
 const ngeohash = require('ngeohash');
 
-// If deployed locally,
-if (isThisLocalhost) {
-
-    //  Initialize app with service account
-    var serviceAccount = require("./service-permit.json");
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      databaseURL: "https://marqur.firebaseio.com"
-    });
-    console.log("Using Local Mode!"); 
-
-} 
-
-// Else, initialize app with default configuration
-else admin.initializeApp(functions.config().firebase);
 
 
-const db = admin.firestore();
-
-// Initialize Express app
+// Initialize Express app and allow Cross-Origin stuff
 const app = express();
-
-// Allow Cross-Origin stuff
 app.use(cors({ origin: true })); 
 
 
-// Add-Marker request
+
+// If deployed locally, initialize app with service account
+if (isThisLocalhost) {
+    var serviceAccount = require("./service-permit.json");
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        databaseURL: "https://marqur.firebaseio.com"
+    });
+} 
+// Else, initialize app with default Firebase configuration
+else admin.initializeApp(functions.config().firebase);
+
+
+
+// Reference to the marqur Firestore Database
+const db = admin.firestore();
+
+
+/*
+    API: Create marker 
+    Raw POST request that instantly adds a marker to database
+*/
 app.post('/api/create', (req, res) => {
-  (async () => {
-      try {
-          var author = req.body.author;
-          var location = new admin.firestore.GeoPoint(req.body.location.x,req.body.location.y);
-          var geohash = ngeohash.encode(req.body.location.x,req.body.location.y)
-          var content = req.body.content
-          var marker = {
-            author: author,
-            location: location,
-            geohash: geohash,
-            content: content,
-            date_created: admin.firestore.FieldValue.serverTimestamp(),
-            date_modified: admin.firestore.FieldValue.serverTimestamp(),
-            views:0,
-            upvotes: 0,
-            downvotes: 0,
-            comments_count: 0,
-            reports: 0
-          };
-          await db.collection('markers')
-              .add(marker)
-              .then(function(docRef) {
-                docRef.update({marker_id:docRef.id});
-            });
-          return res.status(200).send();
-      } catch (error) {
-          console.log(error);
-          return res.status(500).send(error);
-      }
+    (async () => {
+        try {
+          
+            var author = req.body.author;
+            var location = new admin.firestore.GeoPoint( req.body.location.x, req.body.location.y );
+            var geohash = ngeohash.encode( req.body.location.x, req.body.location.y )
+            var content = req.body.content
+          
+            var marker = {
+                author: author,
+                location: location,
+                geohash: geohash,
+                content: content,
+                date_created: admin.firestore.FieldValue.serverTimestamp(),
+                date_modified: admin.firestore.FieldValue.serverTimestamp(),
+                views:0,
+                upvotes: 0,
+                downvotes: 0,
+                comments_count: 0,
+                reports: 0
+            };
+
+            await db.collection('markers')
+                .add(marker)
+                .then(function(docRef) {
+                    docRef.update({marker_id:docRef.id});
+                });
+            return res.status(200).send();
+
+        } catch (error) {
+            console.log(error);
+            return res.status(500).send(error);
+        }
     })();
 });
 
 
 // Read-Marker Request
 app.get('/api/read/:marker_id', (req, res) => {
-  (async () => {
-      try {
-          const document = db.collection('markers').doc(req.params.marker_id);
-          let marker = await document.get();
-          let response = marker.data();
-          return res.status(200).send(response);
-      } catch (error) {
-          console.log(error);
-          return res.status(500).send(error);
-      }
-      })();
-  });
+    (async () => {
+        try {
+            const document = db.collection('markers').doc(req.params.marker_id);
+            let marker = await document.get();
+            let response = marker.data();
+            return res.status(200).send(response);
+        } catch (error) {
+            console.log(error);
+            return res.status(500).send(error);
+        }
+    })();
+});
 
 
 // Update-Marker Request

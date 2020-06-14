@@ -9,11 +9,20 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".ReaderFragment"
     tools:showIn="@layout/page_reader">
+    <TextView
+        android:id="@+id/markers_in_your_area"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:textSize="20dp"
+        android:textAlignment="center"
+        android:paddingTop="30dp"
+        android:text="@string/markers_in_your_area"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/feed_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@id/markers_in_your_area"
         android:scrollbars="vertical"/>
 
 

@@ -148,9 +148,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+
         // Keep Authentication Status synced with backend
         mFirebaseAuth.addAuthStateListener(mAuthListener);
 
+        // If logged-in, show logout option... and vice-versa
+        if(menu != null) {
+            if (checkAuth()) {showOption(R.id.action_logout); hideOption(R.id.action_login);}
+            else {showOption(R.id.action_login); hideOption(R.id.action_logout);}
+        }
 
     }
 
@@ -239,14 +245,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.search_fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.search_fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//            }
+//        });
     }
 
 
@@ -263,19 +269,19 @@ public class MainActivity extends AppCompatActivity {
                 // AppBar Collapsed
                 if(!isAppBarExpanded) {
                     isAppBarExpanded = true;
-                    showOption(R.id.action_search);
+//                    showOption(R.id.action_search);
 //                    showMarquee();
                 }
             } else if (verticalOffset == 0) {
                 // AppBar Expanded
                 if(isAppBarExpanded) {
                     isAppBarExpanded = false;
-                    hideOption(R.id.action_search);
+//                    hideOption(R.id.action_search);
 
                 }
             } else {
                 // AppBar Partially Expanded
-                hideOption(R.id.action_search);
+//                hideOption(R.id.action_search);
             }
 
         });
@@ -430,7 +436,7 @@ public class MainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.main_options, menu);
 
         // Hide these from menu
-        hideOption(R.id.action_search);
+//        hideOption(R.id.action_search);
         hideOption(R.id.action_login);
         hideOption(R.id.action_logout);
 
@@ -457,19 +463,20 @@ public class MainActivity extends AppCompatActivity {
 
         // If-else case matching for selected item...
         // Handle action bar item clicks here.
-        if (id == R.id.action_settings) {
-            return true;
-        } else if (id == R.id.action_search) {
-            return true;
-        } else if (id == R.id.action_login) {
-            hideOption(R.id.action_login);
-            showOption(R.id.action_logout);
+//        if (id == R.id.action_settings) {
+//            return true;
+//        } else if (id == R.id.action_search) {
+//                return true;
+//        } else
+            if (id == R.id.action_login) {
+//            hideOption(R.id.action_login);
+//            showOption(R.id.action_logout);
             Intent intent = new Intent(MainActivity.this, AuthActivity.class);
             startActivityForResult(intent,AUTH_REQUEST_CODE);
             return true;
         } else if (id == R.id.action_logout) {
-            hideOption(R.id.action_logout);
-            showOption(R.id.action_login);
+//            hideOption(R.id.action_logout);
+//            showOption(R.id.action_login);
             FirebaseAuth.getInstance().signOut();
             Intent intent = new Intent(MainActivity.this, AuthActivity.class);
             startActivityForResult(intent,AUTH_REQUEST_CODE);
