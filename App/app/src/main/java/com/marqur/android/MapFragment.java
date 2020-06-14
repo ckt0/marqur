@@ -1,6 +1,6 @@
 /**
  * Manipulates the map once available.
- * This callback is triggered when the map is ready to be used.
+ * This callback is triggered when the ma';/p is ready to be used.
  * This is where we can add Marker or lines, add listeners or move the camera. In this case,
  * we just add a marker near Sydney, Australia.
  * If Google Play services is not installed on the device, the user will be prompted to install
@@ -32,6 +32,7 @@ import androidx.fragment.app.Fragment;
 
 import com.github.davidmoten.geo.GeoHash;
 import com.github.davidmoten.geo.LatLong;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -46,16 +47,17 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.maps.android.clustering.ClusterItem;
 import com.google.maps.android.clustering.ClusterManager;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -66,7 +68,7 @@ import java.util.Objects;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 
-public class MapFragment extends Fragment implements OnMapReadyCallback, ClusterManager.OnClusterItemClickListener {
+public class MapFragment extends Fragment implements OnMapReadyCallback {
 
 
 
@@ -82,13 +84,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Cluster
     private boolean count=true;
     private FloatingActionButton fab;
     private TextView mplace_name;
-
     private CardView cardView;
     private LatLng mapcoord;
     private Map<String, com.marqur.android.Marker> currently_fetched=new HashMap<>(  );
-
     private FirebaseFirestore firestore ;
-
     private ClusterManager<MarkerCluster> clusterManager;
     private MarkerCluster markers;
 
@@ -114,14 +113,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Cluster
         View mapView = inflater.inflate(R.layout.page_map, null, false);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment)this.getChildFragmentManager()
+        SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager()
                 .findFragmentById(R.id.map);
 
         //Initialise firestore
         firestore = FirebaseFirestore.getInstance();
 
 
-        assert mapFragment != null;
+
         mapFragment.getMapAsync(this);
 
         return mapView;
@@ -140,31 +139,28 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Cluster
         mplace_name=getView().findViewById(R.id.place_name);
         // Initialize the SDK
         Places.initialize(requireActivity(), getString(R.string.google_maps_key));
-        // Create a new Places client instance
 
-        // Initialize the AutocompleteSupportFragment.
-        // Use fields to define the data types to return.
-//
-//        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
-//                getChildFragmentManager().findFragmentById(R.id.autocomplete_fragment);
-//        //Specify the types of place data to return.
-//        autocompleteFragment.setPlaceFields(Collections.singletonList(Place.Field.LAT_LNG));
-//        // Set up a PlaceSelectionListener to handle the response.
-//        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-//            @Override
-//            public void onPlaceSelected(@NotNull Place place) {
-//
-//
-//                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), DEFAULT_ZOOM));
-//                // TODO: Get info about the selected place.
-//            }
-//
-//            @Override
-//            public void onError(Status status) {
-//                // TODO: Handle the error.
-//                Log.i(TAG, "An error occurred: " + status);
-//            }
-//        });
+
+        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
+                getChildFragmentManager().findFragmentById(R.id.autocomplete_fragment);
+        //Specify the types of place data to return.
+        autocompleteFragment.setPlaceFields( Collections.singletonList(Place.Field.LAT_LNG));
+        // Set up a PlaceSelectionListener to handle the response.
+        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected( Place place) {
+
+
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), DEFAULT_ZOOM));
+                fetch_markers();
+            }
+
+            @Override
+            public void onError(Status status) {
+                // TODO: Handle the error.
+                Log.i(TAG, "An error occurred: " + status);
+            }
+        });
 
         //Floating action button
         fab.setOnClickListener( view1 -> {
@@ -200,6 +196,31 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Cluster
         clusterManager.setRenderer(new MarkerClusterRenderer(getActivity(), mMap, clusterManager));
 
         mMap.getUiSettings().setScrollGesturesEnabled(isSwipeEnabled);
+
+        mMap.setOnMarkerClickListener( clusterManager );
+        //Extracts the marker id from the snippet in order to identify the marker in the database
+        clusterManager.setOnClusterItemClickListener( new ClusterManager.OnClusterItemClickListener<MarkerCluster>() {
+            @Override
+            public boolean onClusterItemClick(MarkerCluster clusterItem) {
+                if(!clusterItem.getTitle().equals( "Current position" )) {
+                    com.marqur.android.Marker marker1 = new com.marqur.android.Marker();
+                    Iterator keyIterator = currently_fetched.keySet().iterator();
+                    String id = clusterItem.getSnippet().substring( clusterItem.getSnippet().indexOf( "~" ) + 1 );
+                    while (keyIterator.hasNext()) {
+                        String key = keyIterator.next().toString();
+                        if (id.equals( key )) {
+                            marker1 = currently_fetched.get( key );
+                            break;
+                        }
+                    }
+                    Log.d( TAG, Objects.requireNonNull( marker1 ).geohash );
+                   startActivity(new Intent( requireActivity().getApplicationContext(), Post.class).putExtra( "mar_details",marker1.mContent.text).putExtra( "picurl",marker1.mContent.getMedia().get( 0 ).getMedia_id() ));
+                }
+
+                return false;
+            }
+        } );
+        //Set to enable or disable swipe when using maps
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
@@ -302,7 +323,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Cluster
                 Task<Location> locationResult = mFusedLocationProviderClient.getLastLocation();
                 locationResult.addOnCompleteListener( requireActivity(), new OnCompleteListener<Location>() {
                     @Override
-                    public void onComplete(@NotNull Task<Location> task) {
+                    public void onComplete( Task<Location> task) {
                         if (task.isSuccessful() && task.getResult() != null) {
                             mLastKnownLocation = task.getResult();
                             // Set the map's camera position to the current location of the device.
@@ -312,7 +333,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Cluster
 
                             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                     position, DEFAULT_ZOOM));
-
+                            //Set the current location marker
                             mMap.addMarker( new MarkerOptions().position(position ).title( "Current position" ).icon( BitmapDescriptorFactory.fromResource(R.drawable.placeholder) ) );
                             getAddress();
 
@@ -333,6 +354,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Cluster
         }
     }
 
+    //Get details about the current location from lattitude and longitude
     private void getAddress() {
         String addressStr = "";
         Geocoder myLocation = new Geocoder(getContext(), Locale.getDefault());
@@ -388,21 +410,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Cluster
 
     }
 
-    @Override
-    public boolean onClusterItemClick(ClusterItem clusterItem) {
-        if(!clusterItem.getTitle().equals( "Current position" )) {
-            com.marqur.android.Marker marker1 = new com.marqur.android.Marker();
-            Iterator keyIterator = currently_fetched.keySet().iterator();
-            String id = clusterItem.getSnippet().substring( clusterItem.getSnippet().indexOf( "~" ) + 1 );
-            while (keyIterator.hasNext()) {
-                String key = keyIterator.next().toString();
-                if (id.equals( key )) {
-                    marker1 = currently_fetched.get( key );
-                    break;
-                }
-            }
-            Log.d( TAG, Objects.requireNonNull( marker1 ).geohash );
-        }
-        return false;
-    }
+
+
 }

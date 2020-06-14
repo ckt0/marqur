@@ -31,9 +31,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.GeoPoint;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
@@ -345,7 +342,7 @@ public class MainActivity extends AppCompatActivity {
      * @param grantResults - List of results
      */
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, @NotNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String[] permissions,  int[] grantResults) {
 
         // If permission was granted,
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {

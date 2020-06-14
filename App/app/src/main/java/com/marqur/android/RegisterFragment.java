@@ -1,10 +1,7 @@
 package com.marqur.android;
 
-import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.app.ProgressDialog;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,9 +11,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.fragment.app.Fragment;
+
 import com.google.android.gms.common.SignInButton;
 
-import org.jetbrains.annotations.NotNull;
+
 
 
 public class RegisterFragment extends Fragment {
@@ -45,7 +44,7 @@ public class RegisterFragment extends Fragment {
      * @param view - Created view
      * @param savedInstanceState - Saved instance data
      */
-    public void onViewCreated(@NotNull View view, Bundle savedInstanceState) {
+    public void onViewCreated( View view, Bundle savedInstanceState) {
 
         // Fetching views
         editTextUsername = requireView().findViewById(R.id.username);

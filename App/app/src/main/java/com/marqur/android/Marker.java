@@ -3,7 +3,8 @@ package com.marqur.android;
 import com.google.firebase.firestore.GeoPoint;
 
 
-public class Marker {
+public class Marker  {
+
     public String markerid;
     public String title;
     public String author;
@@ -16,7 +17,7 @@ public class Marker {
     public int downvotes;
     public int comments_count;
     public int reports;
-    public  Content mContent;
+    public Content mContent;
 
 
 

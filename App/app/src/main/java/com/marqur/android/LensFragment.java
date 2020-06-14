@@ -4,10 +4,6 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
-
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -26,16 +22,19 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+
 import com.github.davidmoten.geo.GeoHash;
 import com.github.davidmoten.geo.LatLong;
 import com.google.firebase.firestore.GeoPoint;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
 import java.util.UUID;
 
 import static android.content.Context.SENSOR_SERVICE;
+
+;
 
 
 /**
@@ -81,7 +80,7 @@ public class LensFragment extends Fragment {
      * @param view - Created view
      * @param savedInstanceState - Saved instance data
      */
-    public void onViewCreated(@NotNull View view, Bundle savedInstanceState) {
+    public void onViewCreated( View view, Bundle savedInstanceState) {
 
         markerVisible = new boolean[30];
         markerBuffer = new Marker[30];

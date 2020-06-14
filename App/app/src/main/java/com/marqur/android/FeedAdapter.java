@@ -6,16 +6,13 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 
-import org.jetbrains.annotations.NotNull;
-
 public class FeedAdapter extends FirestoreRecyclerAdapter<Marker, FeedAdapter.MarkerFeedHolder> {
-    private String[] mDataset;
+
 
 
     public FeedAdapter(@NonNull FirestoreRecyclerOptions<Marker> options) {
