@@ -12,5 +12,16 @@
 
     <include layout="@layout/feed_list" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/reader_add_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_gravity="end|bottom"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="24dp"
+        app:maxImageSize="30dp"
+        app:srcCompat="@drawable/ic_add_marker_white_24dp" />
 
 </RelativeLayout>

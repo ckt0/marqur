@@ -19,17 +19,30 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
 import com.github.davidmoten.geo.GeoHash;
 import com.github.davidmoten.geo.LatLong;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 
 import static android.content.Context.SENSOR_SERVICE;
@@ -58,6 +71,9 @@ public class LensFragment extends Fragment {
     boolean[] markerVisible;
     Marker[] markerBuffer;
 
+    private FirebaseFirestore firestore ;
+//    private FirebaseStorage storage;
+
     private static final int PERMISSION_REQUEST_CODE = 200;
 
 
@@ -70,6 +86,9 @@ public class LensFragment extends Fragment {
      * @return The newly inflated view
      */
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
+
+        firestore = FirebaseFirestore.getInstance();
+//        StorageReference storageRef = storage.getReference();
         return inflater.inflate(R.layout.page_lens, container, false);
     }
 
@@ -88,26 +107,26 @@ public class LensFragment extends Fragment {
         for (int i = 0; i < 30; i++){
             markerVisible[i] = false;
         }
-
-        markerBuffer[0] = new Marker(UUID.randomUUID().toString(),"Dummy Marker #1","chris", new GeoPoint(37.422,-122.084),
-                GeoHash.encodeHash(new LatLong(37.422,-122.084)),
-                "16-03-2020","16-03-2020",0,0,0,0,0,
-                new Content("Dummy Content","Dummy description", null));
-
-        markerBuffer[1] = new Marker(UUID.randomUUID().toString(),"Dummy Marker #2","chris", new GeoPoint(37.421,-122.083),
-                GeoHash.encodeHash(new LatLong(37.421,-122.083)),
-                "16-03-2020","16-03-2020",0,0,0,0,0,
-                new Content("Dummy Content","Dummy description", null));
-
-        markerBuffer[2] = new Marker(UUID.randomUUID().toString(),"Dummy Marker #3","chris", new GeoPoint(37.420,-122.082),
-                GeoHash.encodeHash(new LatLong(37.420,-122.082)),
-                "16-03-2020","16-03-2020",0,0,0,0,0,
-                new Content("Dummy Content","Dummy description", null));
-
-        markerBuffer[3] = new Marker(UUID.randomUUID().toString(),"Dummy Marker #4","chris", new GeoPoint(37.419,-122.081),
-                GeoHash.encodeHash(new LatLong(37.419,-122.081)),
-                "16-03-2020","16-03-2020",0,0,0,0,0,
-                new Content("Dummy Content","Dummy description", null));
+        fetch_markers();
+//        markerBuffer[0] = new Marker(UUID.randomUUID().toString(),"Dummy Marker #1","chris", new GeoPoint(37.422,-122.084),
+//                GeoHash.encodeHash(new LatLong(37.422,-122.084)),
+//                "16-03-2020","16-03-2020",0,0,0,0,0,
+//                new Content("Dummy Content","Dummy description", null));
+//
+//        markerBuffer[1] = new Marker(UUID.randomUUID().toString(),"Dummy Marker #2","chris", new GeoPoint(37.421,-122.083),
+//                GeoHash.encodeHash(new LatLong(37.421,-122.083)),
+//                "16-03-2020","16-03-2020",0,0,0,0,0,
+//                new Content("Dummy Content","Dummy description", null));
+//
+//        markerBuffer[2] = new Marker(UUID.randomUUID().toString(),"Dummy Marker #3","chris", new GeoPoint(37.420,-122.082),
+//                GeoHash.encodeHash(new LatLong(37.420,-122.082)),
+//                "16-03-2020","16-03-2020",0,0,0,0,0,
+//                new Content("Dummy Content","Dummy description", null));
+//
+//        markerBuffer[3] = new Marker(UUID.randomUUID().toString(),"Dummy Marker #4","chris", new GeoPoint(37.419,-122.081),
+//                GeoHash.encodeHash(new LatLong(37.419,-122.081)),
+//                "16-03-2020","16-03-2020",0,0,0,0,0,
+//                new Content("Dummy Content","Dummy description", null));
 
         // Apply cool fade-blink animation to camera icon in the view
         Animation animation = new AlphaAnimation(1, 0);
@@ -501,6 +520,42 @@ public class LensFragment extends Fragment {
     }
 
 
+    private void fetch_markers() {
+//        LatLngBounds curScreen = mMap.getProjection()
+//                .getVisibleRegion().latLngBounds;
+//        String top_right=GeoHash.encodeHash(new LatLong(curScreen.northeast.latitude,curScreen.northeast.longitude));
+//        String bottom_left=GeoHash.encodeHash(new LatLong(curScreen.southwest.latitude,curScreen.southwest.longitude));
+        firestore.collection("markers").orderBy( "geohash" ).limit( 100 ).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+
+                if (task.isSuccessful()) {
+                    int i = 0;
+                    for (QueryDocumentSnapshot document : Objects.requireNonNull( task.getResult() )) {
+                        Log.d( "LENSFRAGMENT", document.getId() + " => " + document.getData() );
+
+                        com.marqur.android.Marker marker = document.toObject( com.marqur.android.Marker.class );
+//                        Log.e( "LENSFRAGMENT", String.valueOf(markerBuffer.length));
+                        if(i > 29) i = 0;
+                        markerBuffer[i++] = marker;
+
+//                        if (marker.mContent.media == null) {
+//                            markers = new MarkerCluster( marker.getTitle(), marker.getmContent().text + "~" + document.getId(), new LatLng( marker.getLocation().getLatitude(), marker.getLocation().getLongitude() ), null );
+//                        } else
+//                            markers = new MarkerCluster( marker.getTitle(), marker.getmContent().text + "~" + document.getId(), new LatLng( marker.getLocation().getLatitude(), marker.getLocation().getLongitude() ), marker.getmContent().getMedia().get( 0 ).media_id );
+//                        clusterManager.addItem( markers );
+//                        currently_fetched.put( marker.markerid,marker );
+                    }
+
+//                    clusterManager.cluster();  // 5
+                } else {
+                    Log.d("LENSFRAGMENT", "Error getting documents: ", task.getException());
+                }
+            }
+        });
+
+    }
+
 
     public void drawMarkers(){
 
@@ -545,7 +600,13 @@ public class LensFragment extends Fragment {
                         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(300,300);
 
                         View markerView = LayoutInflater.from(requireContext()).inflate(R.layout.lens_marker, root, false);
+                        markerView.setTag(String.valueOf(markerBuffer[i].markerid));
                         ((TextView) markerView.findViewById(R.id.lens_marker_view_title)).setText(markerBuffer[i].title);
+
+                        ImageView markerImageView = (ImageView) markerView.findViewById(R.id.lens_marker_view_image);
+                        Glide.with(this).load(markerBuffer[i].getmContent().getMedia().get( 0 ).media_id).into(markerImageView);
+
+
                         markerView.setId(getMarkerViewId(i));
                         root.addView(markerView,params);
 

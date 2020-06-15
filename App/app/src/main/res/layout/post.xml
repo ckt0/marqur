@@ -7,17 +7,29 @@
     android:background="#FFFBFB">
 
     <ImageView
-        android:id="@+id/markerimage"
+        android:id="@+id/post_image"
         android:layout_width="match_parent"
         android:layout_height="300dp"
         tools:srcCompat="@tools:sample/avatars" />
 
     <TextView
-        android:id="@+id/details"
+        android:id="@+id/post_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/post_image"
+        android:layout_margin="5sp"
+        android:padding="10dp"
+        android:textSize="25sp"
+        android:text="TextView" />
+
+    <TextView
+        android:id="@+id/post_details"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/markerimage"
-        android:layout_margin="14sp"
-        android:padding="18sp"
+        android:layout_below="@id/post_title"
+        android:layout_margin="5sp"
+        android:padding="10sp"
         android:text="TextView" />
+
+
 </RelativeLayout>

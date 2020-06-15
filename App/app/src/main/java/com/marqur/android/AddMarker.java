@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,6 +30,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -111,8 +113,10 @@ public class AddMarker extends AppCompatActivity {
         storageReference = firebaseStorage.getReference();
 
         user = firebaseAuth.getCurrentUser();
-
-
+        if (user == null) {
+            Toast.makeText(getApplicationContext(), "Sorry, you need to login to do that!", Toast.LENGTH_SHORT).show();
+            finish();
+        }
 
 
         //find the current panned coordinates

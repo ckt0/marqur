@@ -116,8 +116,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager()
                 .findFragmentById(R.id.map);
 
-        //Initialise firestore
-        firestore = FirebaseFirestore.getInstance();
 
 
 
@@ -131,10 +129,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        //Initialise firestore
+        firestore = FirebaseFirestore.getInstance();
         //initialise fused location
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity());
         //Initialise FAB and Widgets
-        fab = getView().findViewById(R.id.search_fab);
+        fab = getView().findViewById(R.id.map_fab);
         cardView=getView().findViewById(R.id.roam_actions);
         mplace_name=getView().findViewById(R.id.place_name);
         // Initialize the SDK
@@ -165,7 +165,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         //Floating action button
         fab.setOnClickListener( view1 -> {
 
-            mapcoord = mMap.getCameraPosition().target;
+//            mapcoord = mMap.getCameraPosition().target;
+
+            mapcoord = (mLastKnownLocation != null) ? new LatLng(mLastKnownLocation.getLatitude(),
+                    mLastKnownLocation.getLongitude()) : mDefaultLocation;
 
             startActivity(new Intent( requireActivity().getApplicationContext(), AddMarker.class).putExtra("latitude", mapcoord.latitude).putExtra("longitude", mapcoord.longitude));
         } );
@@ -214,7 +217,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                         }
                     }
                     Log.d( TAG, Objects.requireNonNull( marker1 ).geohash );
-                   startActivity(new Intent( requireActivity().getApplicationContext(), Post.class).putExtra( "mar_details",marker1.mContent.text).putExtra( "picurl",marker1.mContent.getMedia().get( 0 ).getMedia_id() ));
+                   startActivity(new Intent( requireActivity().getApplicationContext(), Post.class).putExtra( "mar_title",marker1.title).putExtra( "mar_details",marker1.mContent.text).putExtra( "picurl",marker1.mContent.getMedia().get( 0 ).getMedia_id() ));
+                } else {
+                    return true;
                 }
 
                 return false;
@@ -334,7 +339,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                     position, DEFAULT_ZOOM));
                             //Set the current location marker
-                            mMap.addMarker( new MarkerOptions().position(position ).title( "Current position" ).icon( BitmapDescriptorFactory.fromResource(R.drawable.placeholder) ) );
+                            mMap.addMarker( new MarkerOptions().position(position ).title( "Current position" ).icon( BitmapDescriptorFactory.fromResource(R.drawable.placeholder) ).zIndex(0) );
                             getAddress();
 
 

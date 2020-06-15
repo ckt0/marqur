@@ -12,7 +12,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -22,7 +25,9 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -30,6 +35,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Objects;
@@ -284,8 +290,27 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public void openMarker(String id){
+        db.collection("markers").document(id).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                Marker marker = documentSnapshot.toObject(Marker.class);
+                startActivity(new Intent( getApplicationContext(), Post.class).putExtra( "mar_title",marker.title).putExtra( "mar_details",marker.mContent.text).putExtra( "picurl",marker.mContent.getMedia().get( 0 ).getMedia_id() ));
+            }
+        });
+    }
 
 
+    /** Called when the user taps marker in Lens */
+    public void loadMarkerPageOnClick(View view)
+    {
+        String markerId = (String) view.getTag();
+        openMarker(markerId);
+//        String title = ((TextView)view.findViewById(R.id.lens_marker_view_title)).getText().toString();
+//        String details = ((TextView)view.findViewById(R.id.lens_marker_view_details)).getText().toString();
+//        String details = ((ImageView)view.findViewById(R.id.lens_marker_view_image)).
+
+    }
 
 //    public void showMarquee(){
 //

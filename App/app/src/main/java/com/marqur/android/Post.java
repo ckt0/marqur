@@ -18,10 +18,12 @@ public class Post extends AppCompatActivity {
         super.onCreate( savedInstanceState );
         overridePendingTransition(R.anim.fadein, R.anim.fadeout);
         setContentView(R.layout.post);
-        ImageView imageView = (ImageView) findViewById( R.id.markerimage );
-        TextView details = (TextView) findViewById( R.id.details );
+        ImageView imageView = (ImageView) findViewById( R.id.post_image );
+        TextView title = (TextView) findViewById( R.id.post_title );
+        TextView details = (TextView) findViewById( R.id.post_details );
         Intent i = getIntent();
         String url=i.getStringExtra( "picurl" );
+        title.setText( i.getStringExtra( "mar_title" ) );
         details.setText( i.getStringExtra( "mar_details" ) );
         if(url!=null) {
             Glide

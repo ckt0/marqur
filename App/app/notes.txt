@@ -1,23 +1,24 @@
 
 TO-DO before Project Review [in 24 hours]
-- Add substantial number of markers
+* Add substantial number of markers
 √ Search button functionality [Remove?]
 √ Login/Logout Menu behaviour
 √ Settings [Remove]
-- Add description "Markers in your area" to FeedView
-- Individual Marker Page
-    - Full Details
-    - Vote Functionality
-    - Comment Functionality
-    - Report Functionality
-- Add Marker prompt to login
-- Marker Lens
-    - Load nearby markers
-        - Get geohash bounds of immediate area
-        - Fetch markers to Buffer
-        - Render Buffer
-    - Tap Marker to go to page
-    - Fix Sensor noise
-- Feed View
-    - Lazy Scrolling
-    - Nearby markers
+√ Add description "Markers in your area" to FeedView
+* Individual Marker Page
+    √ Full Details
+    X Vote Functionality
+    X Comment Functionality
+    X Report Functionality
+√ Add-Marker prompt to login
+* Marker Lens
+    * Load nearby markers
+        X Get geohash bounds of immediate area
+        √ Fetch markers to Buffer
+        √ Render Buffer
+    √ Tap Marker to go to page
+    X Fix Sensor noise
+* Feed View
+    X Lazy Scrolling
+    X Nearby markers
+    √ Add Marker FAB
